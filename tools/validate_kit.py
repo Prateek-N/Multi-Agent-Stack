@@ -384,14 +384,15 @@ def check_file_inventory() -> None:
     print("\n--- File Inventory (README.md repository map) ---")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     # Find the repository map code block and extract file names
-    block = re.search(r"## Repository Map.*?```(.*?)```", readme, re.DOTALL)
+    block = re.search(r"Repository Map.*?```(.*?)```", readme, re.DOTALL)
     if not block:
         ok("No repository map block found in README.md (skip)")
         return
 
     files_in_readme: list[str] = []
     for line in block.group(1).splitlines():
-        m = re.search(r"[├└│]\s*(?:├──|└──)\s*(\S+\.\w+)", line)
+        # Allow optional emoji/unicode between tree indicator and filename
+        m = re.search(r"(?:├──|└──)\s*[^\w\s./\\-]*\s*([\w][\w.\-]*\.\w+)", line)
         if m:
             files_in_readme.append(m.group(1))
 
