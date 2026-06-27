@@ -247,6 +247,11 @@ def main() -> None:
         action="store_true",
         help="Regenerate system_prompt.md even if it already exists.",
     )
+    parser.add_argument(
+        "--claude-md",
+        action="store_true",
+        help="Also generate CLAUDE.md in the project root (Claude Code integration).",
+    )
     args = parser.parse_args()
 
     # Resolve project root
@@ -384,6 +389,43 @@ def main() -> None:
     print("Next: Paste system_prompt.md into your AI tool as the system prompt (do this once).")
     print('Then: python agents-maker/tools/generate_prompt.py "your first task"')
     print()
+
+    # --claude-md: generate CLAUDE.md for Claude Code integration
+    if args.claude_md:
+        try:
+            from tools.generate_claude_md import build_claude_md, _parse_phase
+        except ImportError:
+            from generate_claude_md import build_claude_md, _parse_phase
+
+        state_path = KIT_DIR / "project_state.md"
+        phase = _parse_phase(state_path.read_text(encoding="utf-8")) if state_path.exists() else "task_framing"
+        try:
+            kit_rel = KIT_DIR.relative_to(project_root)
+            kit_rel_path = str(kit_rel).replace("\\", "/")
+        except ValueError:
+            kit_rel_path = "agents-maker"
+
+        claude_md_content = build_claude_md(
+            project_name=project_name,
+            domain=final_domain,
+            confidence="high",
+            stack=stack,
+            phase=phase,
+            kit_rel_path=kit_rel_path,
+        )
+        claude_md_path = project_root / "CLAUDE.md"
+        try:
+            _atomic_write_text(claude_md_path, claude_md_content)
+            print(f"  [DONE] CLAUDE.md written to {claude_md_path}")
+            print("         Claude Code will auto-load domain/phase/stack on every session.")
+            print("         Commit CLAUDE.md to git — it is project config, not private state.")
+        except OSError as e:
+            print(f"  [WARN] Could not write CLAUDE.md: {e}", file=sys.stderr)
+        print()
+    else:
+        print("Tip: Add Claude Code integration (one command, permanent context):")
+        print("     python agents-maker/tools/generate_claude_md.py")
+        print()
 
 
 if __name__ == "__main__":

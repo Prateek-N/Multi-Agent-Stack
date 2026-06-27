@@ -125,6 +125,47 @@ Active skills: review_code, write_tests, suggest_next
 
 ---
 
+## 🤖 Claude Code Integration
+
+If you use [Claude Code](https://claude.ai/code), one extra command wires agents-maker permanently into every session — no copy-paste, no CLI step before every message:
+
+```bash
+python agents-maker/tools/generate_claude_md.py
+```
+
+This writes a `CLAUDE.md` to your project root. Claude Code auto-reads it on every launch, so your **domain, stack, phase, and agent routing** are always loaded silently.
+
+```markdown
+# agents-maker — Project AI Config
+
+## Active Domain
+software  (confidence: high)
+
+## Stack
+Python, FastAPI, PostgreSQL
+
+## Current Phase
+Implementation (`implementation`)
+
+## Agent Routing
+Orchestrator is always active. Specialist agents: code_agent (implementation), reviewer_agent (QA).
+
+## Session Instructions
+- Apply domain routing and phase context from agents-maker before every task.
+- After every response: append a [Companion] block with 3 ranked next steps.
+```
+
+Commit `CLAUDE.md` to git — it's project config, not private state. The whole team gets the context automatically.
+
+Regenerate whenever your phase or stack changes:
+```bash
+python agents-maker/tools/generate_claude_md.py   # refresh domain/phase
+# or, during init:
+python agents-maker/tools/init_project.py --claude-md
+```
+
+---
+
 ## 📚 Context Guide — What to Give the AI
 
 > The quality of every AI response is bounded by the context you provide.
@@ -514,6 +555,7 @@ agents-maker/
 ├── 🔧 tools/
 │   ├── init_project.py              ← one-time bootstrap (run once per project)
 │   ├── generate_prompt.py           ← daily driver (run before every session)
+│   ├── generate_claude_md.py        ← writes CLAUDE.md for Claude Code integration
 │   ├── validate_kit.py              ← 12-check integrity validator
 │   ├── test_kit.py                  ← 60-test edge-case suite (CI + local)
 │   └── domain_utils.py              ← shared domain scoring (used by all 3 tools)
