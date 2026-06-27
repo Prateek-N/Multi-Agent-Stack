@@ -42,58 +42,17 @@ __version__ = "1.0.0"
 MAX_PROBLEM_LENGTH = 5000
 
 # ---------------------------------------------------------------------------
-# Domain scoring (same algorithm as validate_kit.py / orchestrator.md)
+# Domain scoring — delegated to shared domain_utils module
 # ---------------------------------------------------------------------------
 
-def _load_yaml(path: Path) -> dict:
-    try:
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except yaml.YAMLError as e:
-        print(f"[ERROR] YAML parse error in {path}: {e}", file=sys.stderr)
-        return {}
-    except FileNotFoundError:
-        return {}
-    except PermissionError:
-        print(f"[ERROR] Permission denied reading {path}", file=sys.stderr)
-        return {}
-
-
-def _score(message: str, domains: dict, settings: dict) -> tuple[str, str, float]:
-    msg_lower = message.lower()
-    scores: dict[str, float] = {}
-    for d, cfg in domains.items():
-        if d == "general":
-            continue
-        strong = cfg.get("detection_signals", {}).get("strong", [])
-        weak = cfg.get("detection_signals", {}).get("weak", [])
-        s = sum(1.0 for sig in strong if sig in msg_lower)
-        w = sum(0.4 for sig in weak if sig in msg_lower)
-        scores[d] = (s + w) / 3
-
-    if not scores:
-        return "general", "low", 0.0
-
-    ranked = sorted(scores.items(), key=lambda x: -x[1])
-    top_d, top_s = ranked[0]
-    sec_d, sec_s = ranked[1] if len(ranked) > 1 else ("general", 0.0)
-
-    conf_t = settings.get("confidence_threshold", 0.40)
-    amb_t = settings.get("ambiguity_threshold", 0.10)
-
-    if top_s < conf_t:
-        return "general", "low", top_s
-    elif (top_s - sec_s) < amb_t:
-        return top_d, "medium", top_s
-    else:
-        return top_d, "high", top_s
+try:
+    from tools.domain_utils import detect_domain as _du_detect, _load_yaml
+except ImportError:
+    from domain_utils import detect_domain as _du_detect, _load_yaml
 
 
 def detect_domain(problem: str) -> tuple[str, str, float]:
-    domain_cfg = _load_yaml(KIT_DIR / "config" / "domain_profiles.yaml")
-    domains = domain_cfg.get("domains", {})
-    settings = domain_cfg.get("detection_settings", {})
-    return _score(problem, domains, settings)
+    return _du_detect(problem, kit_dir=KIT_DIR, include_score=True)  # type: ignore[return-value]
 
 
 # ---------------------------------------------------------------------------

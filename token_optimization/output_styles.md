@@ -1,5 +1,19 @@
 # Output Styles
 
+## Token Cost Tier Definitions
+
+Used in skill cards and [Companion] block next-step options to set user expectations:
+
+| Tier | Approx. output tokens | Typical context needed |
+|------|----------------------|------------------------|
+| **Low** | < 500 | Conversation only — no file reads required |
+| **Medium** | 500–1,500 | 3–5 source files needed; normal session size |
+| **High** | > 1,500 | Full repo scan or large diff; use `project_summary.py` first |
+
+These tiers are intentionally coarse — they indicate session preparation cost, not response quality.
+
+---
+
 ## Purpose
 
 Named verbosity presets that control the format and length of agent responses. Each style is referenced by name in `config/token_policies.yaml` and in agent spec default settings.

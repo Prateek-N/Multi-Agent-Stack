@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Validate and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Run integrity validator
+        run: python tools/validate_kit.py
+
+      - name: Run test suite
+        run: python tools/test_kit.py
+
+      - name: Extract tag version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract CHANGELOG entry
+        id: changelog
+        run: |
+          python - <<'EOF'
+          import re, os
+          text = open("CHANGELOG.md").read()
+          # Match the first versioned section
+          m = re.search(r"## \[[\d.]+\].*?\n(.*?)(?=\n## \[|$)", text, re.DOTALL)
+          body = m.group(1).strip() if m else "See CHANGELOG.md for details."
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              # Use multiline output format
+              f.write("body<<CHANGELOG_EOF\n")
+              f.write(body + "\n")
+              f.write("CHANGELOG_EOF\n")
+          EOF
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: agents-maker ${{ steps.version.outputs.tag }}
+          body: ${{ steps.changelog.outputs.body }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}

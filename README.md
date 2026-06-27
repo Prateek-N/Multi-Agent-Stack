@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![Agents](https://img.shields.io/badge/Agents-8-purple)
-![Skills](https://img.shields.io/badge/Skills-10-green)
+![Skills](https://img.shields.io/badge/Skills-12-green)
 ![Domains](https://img.shields.io/badge/Domains-8-orange)
 ![Tests](https://img.shields.io/badge/Tests-60%2F60-brightgreen)
 
@@ -349,7 +349,7 @@ Each phase ends with an **approval gate** (A/B/C options). The AI never proceeds
 
 ---
 
-## 🃏 The 10 Skill Cards
+## 🃏 The 12 Skill Cards
 
 > Skills are reusable capability definitions. They define exact output formats so responses are always structured.
 
@@ -365,6 +365,8 @@ Each phase ends with an **approval gate** (A/B/C options). The AI never proceeds
 | `🗺️ suggest_next` | **Auto-fires** after every deliverable — 3 ranked next moves |
 | `⚖️ compare_approaches` | "compare", "trade-off", "which approach" — structured decision table |
 | `🎬 animated_website` | CSS / GSAP / Framer Motion animation plans and production-ready code |
+| `🗂️ write_process_map` | SOP, runbook, or workflow doc — numbered steps + RACI + exceptions |
+| `🗃️ define_data_schema` | Data model, metric definitions, or data dictionary requests |
 
 ---
 
@@ -472,7 +474,8 @@ agents-maker/
 ├── 📝 PROMPT_TEMPLATE.md            ← fill in before every session (no Python needed)
 ├── ⚙️  .github/
 │   └── workflows/
-│       └── validate.yml             ← CI: runs validate_kit.py on every push/PR
+│       ├── validate.yml             ← CI: runs validate_kit.py on every push/PR
+│       └── release.yml              ← tag-triggered GitHub Release publisher
 ├── 📚 docs/
 │   ├── architecture.md              ← agent graph, context flow, design decisions
 │   ├── workflows.md                 ← lifecycle phases, interface contracts
@@ -496,7 +499,9 @@ agents-maker/
 │   ├── summarize_history.md
 │   ├── suggest_next.md              ← auto-fires after every deliverable
 │   ├── compare_approaches.md        ← on-demand decision support
-│   └── animated_website.md          ← CSS/GSAP/Framer Motion animation code
+│   ├── animated_website.md          ← CSS/GSAP/Framer Motion animation code
+│   ├── write_process_map.md         ← SOP/runbook: steps + RACI + exceptions
+│   └── define_data_schema.md        ← ER sketch + metric definitions + data dictionary
 ├── ⚙️  config/
 │   ├── agents.yaml                  ← agent registry: skills, routing tags, cost tier
 │   ├── token_policies.yaml          ← compression + verbosity presets per phase + domain
@@ -509,7 +514,8 @@ agents-maker/
 │   ├── init_project.py              ← one-time bootstrap (run once per project)
 │   ├── generate_prompt.py           ← daily driver (run before every session)
 │   ├── validate_kit.py              ← 11-check integrity validator
-│   └── test_kit.py                  ← 60-test edge-case suite (CI + local)
+│   ├── test_kit.py                  ← 60-test edge-case suite (CI + local)
+│   └── domain_utils.py              ← shared domain scoring (used by all 3 tools)
 ├── 🔌 context_loaders/
 │   ├── project_summary.py           ← stack + structure detection
 │   ├── repo_tree.py                 ← annotated directory tree

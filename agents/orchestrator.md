@@ -170,6 +170,12 @@ At session start, score the user's message against the signal lists in `config/d
 
 **Routing tiebreaker** (when multiple routing tags match different agents): Apply agents in `routing_priority` order from `config/agents.yaml`. Design always precedes implementation — if `architect_agent` and `code_agent` both match, invoke Architect first, then Code Agent with the design output as context.
 
+**Domain-phase mapping precedence**: When domain confidence is **high** and a lifecycle phase is active, the domain-phase mapping in `domain_profiles.yaml` (`domains.<domain>.primary_agents.<phase>`) takes precedence over the flat `routing_priority` list in `agents.yaml`. The `routing_priority` list applies only when:
+- Domain is `general` (no strong detection), OR
+- The user sends a single-turn ad-hoc request outside of lifecycle mode (no active phase)
+
+Example: "implement a marketing campaign" — domain scores `marketing` at high confidence → `execution_agent` is primary for implementation, not `code_agent`, even though `implement` is a code_agent routing tag.
+
 To add or modify domain detection signals, edit `config/domain_profiles.yaml`. No changes to this file are required.
 
 ---
@@ -209,6 +215,21 @@ Every artifact produced in the lifecycle must satisfy its domain-neutral minimum
 
 A phase is not complete — and the approval gate must not be presented — until its artifact satisfies all required fields.
 
+### Phase Exit Criteria
+
+Before presenting any approval gate, verify all conditions in the relevant row are met:
+
+| Phase | Done when… |
+|---|---|
+| **Task Framing** | `task_profile` has all required fields AND no unanswered clarifying questions remain |
+| **Requirements** | `requirements_spec` covers all deliverables, constraints, and edge cases from the `task_profile` |
+| **Solution Design** | All components listed, ≥ 1 ADR present for non-obvious decisions, no open design questions |
+| **Implementation** | All `build_log` increments are approved AND ≥ 1 test or validation step has been passed |
+| **Review** | All CRITICAL and HIGH findings resolved; MEDIUM findings documented as accepted or deferred |
+| **Handoff** | `handoff_package` produced with all domain-required fields (from `domain_profiles.yaml`); user confirmed receipt |
+
+If exit criteria are not met, do not present the approval gate. Re-invoke the primary agent with the specific gap.
+
 **Phase transition validation**: Before presenting the approval gate, the Orchestrator checks:
 - All required fields are present and non-empty.
 - The artifact is consistent with prior approved artifacts (e.g., `solution_design.structure` covers all `requirements_spec.deliverables`).
@@ -243,6 +264,24 @@ What would you like to do?
 5. On **B (changes)**: re-invoke the relevant agent with the change request. Present the revised artifact and re-ask.
 6. On **C (change direction)**: return to Phase 0 or Phase 1 as appropriate, preserving confirmed decisions.
 7. On **D (skip)**: only allowed for phases marked `skippable: true` in `config/agents.yaml`.
+
+### Phase 5 — Handoff (Orchestrator-led)
+
+The Orchestrator is the primary agent for Phase 5. Specialist agents do not produce the handoff — the Orchestrator assembles it from all approved artifacts.
+
+**Handoff procedure:**
+
+1. Pull the domain's `handoff_artifact_hints` from `domain_profiles.yaml` at `domains.<domain>.artifact_hints.handoff`.
+2. Assemble the `handoff_package` artifact using these required fields:
+   - `summary[]` — 3–5 bullets describing what was built/produced in plain language
+   - `whats_done[]` — full list of approved deliverables with one-line descriptions
+   - `whats_next.p1[]` — highest priority next steps (continue this project)
+   - `whats_next.p2[]` — medium priority (expand scope)
+   - `whats_next.p3[]` — deferred items (technical debt, open questions, follow-on projects)
+3. Include domain-specific deliverable details from `artifact_hints.handoff.deliverables_label`.
+4. Ask the user: **"New project, or continue extending this one?"**
+5. Emit the final `[Companion]` block with 3 post-handoff options (e.g., start next project, extend current, extract reusable patterns).
+6. Signal the Compression Agent to emit the final `project_state.md` snapshot.
 
 ---
 
@@ -331,6 +370,32 @@ Effort: <estimate> | Token cost: <low | medium | high>
 
 _Not what you need? Describe your actual next step and the Orchestrator will re-plan._
 ---
+```
+
+**Companion Block Schema** (canonical format — always render as human-readable text; schema is for reference and automation):
+
+```yaml
+companion:
+  phase: <string>                  # current lifecycle phase name (e.g., "implementation")
+  domain: <string>                 # detected domain key (e.g., "software")
+  token_budget_used_pct: <int>     # estimated % of phase max_input_tokens consumed
+  options:
+    A:
+      label: <string>              # action-verb name, specific to this project
+      why: <string>                # one sentence tied to current state, constraint, or open risk
+      effort: <string>             # e.g., "~30 mins", "~1 session", "~2 sessions"
+      token_cost: <low|medium|high>
+      command: <string>            # exact copy-pasteable generate_prompt.py command
+    B:
+      label: <string>
+      why: <string>
+      effort: <string>
+      token_cost: <low|medium|high>
+    C:
+      label: <string>
+      why: <string>
+      effort: <string>
+      token_cost: <low|medium|high>
 ```
 
 **Rules for Companion Mode output:**

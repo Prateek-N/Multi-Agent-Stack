@@ -11,6 +11,7 @@ Usage:
 import argparse
 import sys
 import os
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -38,65 +39,14 @@ except ImportError as e:
     print("[ERROR] Make sure you're running from the project root and agents-maker/ is present.", file=sys.stderr)
     sys.exit(1)
 
-# ---------------------------------------------------------------------------
-# Domain detection (same algorithm as validate_kit.py / orchestrator.md)
-# ---------------------------------------------------------------------------
-
-def _load_yaml(path: Path) -> dict:
-    try:
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except yaml.YAMLError as e:
-        print(f"[ERROR] YAML parse error in {path}: {e}", file=sys.stderr)
-        return {}
-    except FileNotFoundError:
-        return {}
-    except PermissionError:
-        print(f"[ERROR] Permission denied reading {path}", file=sys.stderr)
-        return {}
-
-
-def _score(message: str, domains: dict, settings: dict) -> tuple[str, str]:
-    msg_lower = message.lower()
-    scores: dict[str, float] = {}
-    for d, cfg in domains.items():
-        if d == "general":
-            continue
-        strong = cfg.get("detection_signals", {}).get("strong", [])
-        weak = cfg.get("detection_signals", {}).get("weak", [])
-        s = sum(1.0 for sig in strong if sig in msg_lower)
-        w = sum(0.4 for sig in weak if sig in msg_lower)
-        scores[d] = (s + w) / 3
-
-    if not scores:
-        return "general", "low"
-
-    ranked = sorted(scores.items(), key=lambda x: -x[1])
-    top_d, top_s = ranked[0]
-    sec_d, sec_s = ranked[1] if len(ranked) > 1 else ("general", 0.0)
-
-    conf_t = settings.get("confidence_threshold", 0.40)
-    amb_t = settings.get("ambiguity_threshold", 0.10)
-
-    if top_s < conf_t:
-        return "general", "low"
-    elif (top_s - sec_s) < amb_t:
-        return top_d, "medium"
-    else:
-        return top_d, "high"
+try:
+    from tools.domain_utils import detect_domain as _detect_domain, _load_yaml
+except ImportError:
+    from domain_utils import detect_domain as _detect_domain, _load_yaml
 
 
 def detect_domain(summary_text: str) -> tuple[str, str]:
-    domain_cfg_path = KIT_DIR / "config" / "domain_profiles.yaml"
-    if not domain_cfg_path.exists():
-        print(f"[WARN] domain_profiles.yaml not found — defaulting to 'general'", file=sys.stderr)
-        return "general", "low"
-    raw = _load_yaml(domain_cfg_path)
-    if not raw:
-        return "general", "low"
-    domains = raw.get("domains", {})
-    settings = raw.get("detection_settings", {})
-    return _score(summary_text, domains, settings)
+    return _detect_domain(summary_text, kit_dir=KIT_DIR)  # type: ignore[return-value]
 
 
 def detect_stack_from_summary(summary_text: str) -> list[str]:
@@ -106,6 +56,30 @@ def detect_stack_from_summary(summary_text: str) -> list[str]:
             if parts and parts != "Unknown":
                 return [p.strip() for p in parts.split(",") if p.strip()]
     return []
+
+
+# ---------------------------------------------------------------------------
+# Atomic write helpers (write to temp then os.replace — crash-safe)
+# ---------------------------------------------------------------------------
+
+def _atomic_write_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w", dir=path.parent, delete=False, suffix=".tmp", encoding="utf-8"
+    ) as f:
+        f.write(content)
+        tmp = f.name
+    os.replace(tmp, path)
+
+
+def _atomic_write_yaml(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w", dir=path.parent, delete=False, suffix=".tmp", encoding="utf-8"
+    ) as f:
+        yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        tmp = f.name
+    os.replace(tmp, path)
 
 
 # ---------------------------------------------------------------------------
@@ -317,8 +291,7 @@ def main() -> None:
         "last_session": existing_cfg.get("last_session") if args.update else None,
     }
     try:
-        with open(project_yaml_path, "w", encoding="utf-8") as f:
-            yaml.dump(project_cfg, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        _atomic_write_yaml(project_yaml_path, project_cfg)
     except OSError as e:
         print(f"[ERROR] Could not write project.yaml: {e}", file=sys.stderr)
         sys.exit(1)
@@ -328,7 +301,7 @@ def main() -> None:
     if not system_prompt_path.exists() or args.update:
         system_prompt_text = build_system_prompt(project_name, final_domain, stack)
         try:
-            system_prompt_path.write_text(system_prompt_text, encoding="utf-8")
+            _atomic_write_text(system_prompt_path, system_prompt_text)
         except OSError as e:
             print(f"[ERROR] Could not write system_prompt.md: {e}", file=sys.stderr)
             sys.exit(1)
@@ -344,7 +317,7 @@ def main() -> None:
     state_path = KIT_DIR / "project_state.md"
     if not state_path.exists():
         try:
-            state_path.write_text(STATE_TEMPLATE, encoding="utf-8")
+            _atomic_write_text(state_path, STATE_TEMPLATE)
             state_created = True
         except OSError as e:
             print(f"[ERROR] Could not write project_state.md: {e}", file=sys.stderr)

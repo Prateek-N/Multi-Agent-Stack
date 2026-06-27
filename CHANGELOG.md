@@ -6,6 +6,23 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ---
 
+## [Unreleased]
+
+### Added
+- `skills/write_process_map.md` — new ops_process skill: numbered step table, RACI matrix, exception-handling table
+- `skills/define_data_schema.md` — new data_analytics skill: ER sketch (ASCII), metric definition table, data dictionary
+- `tools/domain_utils.py` — shared domain scoring module; eliminates duplicated scoring logic across 3 tools
+- `.github/workflows/release.yml` — tag-triggered release workflow: validates, tests, and publishes GitHub Release with CHANGELOG body
+
+### Changed
+- `agents/orchestrator.md` — added domain-phase mapping precedence rule, Phase Exit Criteria table, Phase 5 Handoff procedure spec, and Companion Block Schema
+- `config/agents.yaml` — registered `write_process_map` on `execution_agent`, `define_data_schema` on `code_agent`; added routing_priority comment clarifying when it applies vs. domain-phase mapping
+- `token_optimization/output_styles.md` — added Token Cost Tier Definitions table (Low/Medium/High)
+- `tools/init_project.py` — atomic file writes via `tempfile + os.replace`; delegates domain scoring to `domain_utils`
+- `tools/generate_prompt.py` — delegates domain scoring to `domain_utils`
+
+---
+
 ## [1.0.0] — 2026-06-27
 
 Initial public release.

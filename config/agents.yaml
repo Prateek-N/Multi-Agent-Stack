@@ -89,6 +89,7 @@ agents:
       - write_tests
       - suggest_next
       - animated_website
+      - define_data_schema
     routing_tags:
       - implement
       - code
@@ -124,6 +125,7 @@ agents:
       - improve_copy
       - design_api
       - suggest_next
+      - write_process_map
     routing_tags:
       - draft
       - write
@@ -284,6 +286,15 @@ agents:
 
 # ---------------------------------------------------------------------------
 # Routing priority (ad-hoc workflows — when multiple tags match)
+#
+# This list applies ONLY when:
+#   (a) domain is "general" (no strong detection), OR
+#   (b) the user sends a single-turn ad-hoc request outside lifecycle mode
+#       (no active phase).
+#
+# When domain confidence is HIGH and a lifecycle phase is active, the
+# domain-phase mapping in domain_profiles.yaml (domains.<d>.primary_agents)
+# takes precedence. Design always precedes implementation within a lifecycle.
 # ---------------------------------------------------------------------------
 routing_priority:
   - architect_agent     # design before implementation
@@ -373,3 +384,5 @@ skill_file_map:
   suggest_next: skills/suggest_next.md
   compare_approaches: skills/compare_approaches.md
   animated_website: skills/animated_website.md
+  write_process_map: skills/write_process_map.md
+  define_data_schema: skills/define_data_schema.md
