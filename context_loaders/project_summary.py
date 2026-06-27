@@ -21,6 +21,8 @@ import argparse
 import sys
 from pathlib import Path
 
+__version__ = "1.0.0"
+
 
 # ---------------------------------------------------------------------------
 # Stack detection rules
@@ -344,6 +346,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate a compact project summary for agent context."
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--path", required=True, help="Repository root directory.")
     parser.add_argument("--output", help="Write output to this file instead of stdout.")
     args = parser.parse_args()

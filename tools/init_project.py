@@ -18,6 +18,8 @@ from pathlib import Path
 # Path setup — allow imports from context_loaders and config
 # ---------------------------------------------------------------------------
 
+__version__ = "1.0.0"
+
 SCRIPT_DIR = Path(__file__).resolve().parent       # agents-maker/tools/
 KIT_DIR = SCRIPT_DIR.parent                        # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
@@ -224,6 +226,7 @@ def main() -> None:
             "  python agents-maker/tools/init_project.py --update  # regenerate system_prompt.md\n"
         ),
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "--path",
         help="Project root directory (default: parent of agents-maker/)",

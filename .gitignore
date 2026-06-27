@@ -18,3 +18,22 @@ dist/
 build/
 .pytest_cache/
 .mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# IDEs
+.vscode/
+.idea/
+.fleet/
+*.swp
+*.swo
+*~
+
+# Coverage
+.coverage
+htmlcov/
+.tox/

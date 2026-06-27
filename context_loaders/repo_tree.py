@@ -23,6 +23,8 @@ Output format:
 
 from __future__ import annotations
 
+__version__ = "1.0.0"
+
 import argparse
 import os
 import sys
@@ -172,6 +174,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Emit a filtered, annotated file tree for agent context."
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--path", required=True, help="Root directory of the repository.")
     parser.add_argument(
         "--filter", nargs="*", metavar="PREFIX",

@@ -32,6 +32,8 @@ Output format (paste directly into agent context):
 
 from __future__ import annotations
 
+__version__ = "1.0.0"
+
 import argparse
 import sys
 from pathlib import Path
@@ -176,6 +178,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Extract and format file chunks for agent context."
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--path", required=True, help="Repository root directory.")
     parser.add_argument(
         "--files", nargs="*", metavar="FILE",
@@ -206,12 +209,16 @@ def main() -> None:
     file_paths: list[Path] = []
 
     if args.files:
+        root_resolved = root.resolve()
         for f in args.files:
-            p = root / f.lstrip("/")
+            p = (root / f).resolve()
+            if not str(p).startswith(str(root_resolved)):
+                print(f"[WARN] Skipping {f} — path escapes project root.", file=sys.stderr)
+                continue
             if p.is_file():
                 file_paths.append(p)
             else:
-                print(f"Warning: {p} not found — skipping.", file=sys.stderr)
+                print(f"[WARN] {p} not found — skipping.", file=sys.stderr)
 
     if args.dirs:
         file_paths.extend(collect_from_dirs(root, args.dirs, max_files=args.max_files))
