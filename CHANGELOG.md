@@ -10,6 +10,7 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ### Added
 - `tools/generate_claude_md.py` — new CLI tool: writes `CLAUDE.md` to project root for Claude Code integration; reads `config/project.yaml` + `project_state.md`; outputs domain, stack, phase, and agent routing; supports `--dry-run` and `--path` flags
+- `cookbook/` — 6 complete end-to-end session transcripts (one per major domain): `fastapi-rate-limiter` (software), `react-component-audit` (product_design), `go-to-market-brief` (marketing), `data-pipeline-schema` (data_analytics), `sre-runbook` (ops_process), `research-lit-review` (research); each covers all 6 lifecycle phases with real prompts, real AI excerpts, and real output artifacts
 - `skills/write_process_map.md` — new ops_process skill: numbered step table, RACI matrix, exception-handling table
 - `skills/define_data_schema.md` — new data_analytics skill: ER sketch (ASCII), metric definition table, data dictionary
 - `tools/domain_utils.py` — shared domain scoring module; eliminates duplicated scoring logic across 3 tools

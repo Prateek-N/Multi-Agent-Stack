@@ -45,6 +45,21 @@
 
 ---
 
+## 📖 Cookbook
+
+Real end-to-end session transcripts — actual prompts, actual AI responses, actual output artifacts. One entry per major domain.
+
+| Domain | Task |
+|---|---|
+| `software` | [Add Redis sliding-window rate limiting to FastAPI](cookbook/fastapi-rate-limiter/session.md) |
+| `product_design` | [UI/UX audit of a B2B SaaS settings page](cookbook/react-component-audit/session.md) |
+| `marketing` | [GTM brief for a developer tool launching on Product Hunt](cookbook/go-to-market-brief/session.md) |
+| `data_analytics` | [ER schema + metrics for a SaaS subscription pipeline](cookbook/data-pipeline-schema/session.md) |
+| `ops_process` | [On-call runbook for PostgreSQL failover (steps + RACI)](cookbook/sre-runbook/session.md) |
+| `research` | [Literature review plan for transformer efficiency survey](cookbook/research-lit-review/session.md) |
+
+---
+
 ## ⚡ Quickstart
 
 ### 🪟 Windows
@@ -566,8 +581,22 @@ agents-maker/
 ├── 💰 token_optimization/
 │   ├── output_styles.md             ← style usage guide (definitions in token_policies.yaml)
 │   └── compressor.py                ← token budget enforcement engine
-└── 📖 examples/
-    └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
+├── 📖 examples/
+│   └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
+└── 📖 cookbook/
+    ├── README.md                      ← index of all 6 session transcripts
+    ├── fastapi-rate-limiter/
+    │   └── session.md                 ← software: Redis rate limiting (FastAPI)
+    ├── react-component-audit/
+    │   └── session.md                 ← product_design: UX audit (React settings page)
+    ├── go-to-market-brief/
+    │   └── session.md                 ← marketing: GTM brief (Product Hunt launch)
+    ├── data-pipeline-schema/
+    │   └── session.md                 ← data_analytics: ER schema + metrics (SaaS)
+    ├── sre-runbook/
+    │   └── session.md                 ← ops_process: PostgreSQL failover runbook
+    └── research-lit-review/
+        └── session.md                 ← research: transformer survey lit review
 ```
 
 ---
