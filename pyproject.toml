@@ -35,6 +35,9 @@ dev = [
     "mypy>=1.0",
     "types-PyYAML",
 ]
+actions = [
+    "anthropic>=0.40",
+]
 
 [project.scripts]
 agents-generate = "tools.generate_prompt:main"

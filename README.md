@@ -140,6 +140,26 @@ Active skills: review_code, write_tests, suggest_next
 
 ---
 
+## 🔁 GitHub Action — AI PR Reviews
+
+Add structured AI code review to every pull request in 4 lines:
+
+```yaml
+# .github/workflows/review.yml
+- uses: actions/setup-python@v5
+  with:
+    python-version: '3.11'
+- uses: Prateek-N/Multi-Agent-Stack/actions/review-pr@main
+  with:
+    anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+Every PR gets a severity-rated `refinement_report` comment — critical, high, medium, low findings with specific recommendations. CI fails on critical findings by default.
+
+See [`actions/review-pr/README.md`](actions/review-pr/README.md) for full setup, model options, and cost estimates.
+
+---
+
 ## 🤖 Claude Code Integration
 
 If you use [Claude Code](https://claude.ai/code), one extra command wires agents-maker permanently into every session — no copy-paste, no CLI step before every message:
@@ -581,6 +601,11 @@ agents-maker/
 ├── 💰 token_optimization/
 │   ├── output_styles.md             ← style usage guide (definitions in token_policies.yaml)
 │   └── compressor.py                ← token budget enforcement engine
+├── 🔁 actions/
+│   └── review-pr/
+│       ├── action.yml                 ← GitHub composite action definition
+│       ├── run.py                     ← runner: diff fetch, Claude call, PR comment
+│       └── README.md                  ← setup instructions + example output
 ├── 📖 examples/
 │   └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
 └── 📖 cookbook/

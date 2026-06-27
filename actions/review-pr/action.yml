@@ -1,0 +1,48 @@
+name: 'agents-maker PR Review'
+description: >
+  Run reviewer_agent on a pull request diff and post a structured
+  refinement_report (severity-rated findings table) as a PR comment.
+author: 'Prateek Narvariya'
+
+branding:
+  icon: 'eye'
+  color: 'purple'
+
+inputs:
+  anthropic_api_key:
+    description: 'Anthropic API key (store as a repository secret)'
+    required: true
+  model:
+    description: 'Claude model ID (default: claude-haiku-4-5 — fast and cheap)'
+    required: false
+    default: 'claude-haiku-4-5-20251001'
+  max_files:
+    description: 'Max changed files to include in the diff (default: 20)'
+    required: false
+    default: '20'
+  fail_on_critical:
+    description: 'Exit code 1 when critical findings are present (default: true)'
+    required: false
+    default: 'true'
+  pr_number:
+    description: 'PR number — auto-detected from pull_request event if omitted'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install reviewer dependencies
+      shell: bash
+      run: pip install "anthropic>=0.40" "pyyaml>=6.0,<8" --quiet
+
+    - name: Run reviewer_agent
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        GITHUB_TOKEN: ${{ github.token }}
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_MAX_FILES: ${{ inputs.max_files }}
+        INPUT_FAIL_ON_CRITICAL: ${{ inputs.fail_on_critical }}
+        INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+      run: python "${{ github.action_path }}/run.py"
