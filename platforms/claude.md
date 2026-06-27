@@ -60,7 +60,7 @@ In Claude.ai, create a new Project. Name it something like "Dev Assistant" or af
 
 Open Project Settings → Instructions. Paste the entire contents of `system_prompt.md` as the Project Instructions.
 
-That's it — `system_prompt.md` contains all 8 agents and 10 skills pre-assembled (~24K tokens). No individual file uploads needed.
+That's it — `system_prompt.md` contains all 8 agents and 12 skills pre-assembled (~28K tokens). No individual file uploads needed.
 
 ```
 # Copy the full contents of system_prompt.md and paste here:

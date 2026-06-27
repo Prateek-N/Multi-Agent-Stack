@@ -435,8 +435,9 @@ Use `--compress` to attach the active token policy to any generated prompt. Use 
 
 | Platform | 🔗 How to use |
 |---|---|
-| 🟣 **Claude** | Paste `system_prompt.md` into Project Knowledge or the system prompt field. See [`platforms/claude.md`](platforms/claude.md). |
-| 🟢 **OpenAI / Codex** | Upload to Assistants via file_search or paste as system message. See [`platforms/openai.md`](platforms/openai.md). |
+| 🟣 **Claude (Projects)** | Paste `system_prompt.md` into Project Instructions — one-time setup. See [`platforms/claude.md`](platforms/claude.md) Option A. |
+| 🟣 **Claude (free tier)** | Paste `system_prompt.md` as your first message each session. See [`platforms/claude.md`](platforms/claude.md) Option C. |
+| 🟢 **OpenAI / ChatGPT** | Pass `system_prompt.md` as the `system` role — Companion Mode works identically. See [`platforms/openai.md`](platforms/openai.md). |
 | 🔵 **Antigravity** | Map phases to pipeline stages. See [`platforms/antigravity.md`](platforms/antigravity.md). |
 | ⚪ **Any other tool** | Use `--full` flag — one self-contained paste includes everything. |
 

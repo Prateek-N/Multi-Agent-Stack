@@ -38,7 +38,7 @@ Initial public release.
 
 **Core kit**
 - 8 specialist agents: Orchestrator, Architect/Planner, Code Agent, Execution Agent, UI Agent, UX Agent, Reviewer Agent, Compression Agent
-- 10 skill cards: `analyze_repo`, `design_api`, `review_code`, `review_layout`, `improve_copy`, `write_tests`, `summarize_history`, `suggest_next`, `compare_approaches`, `animated_website`
+- 10 skill cards (initial): `analyze_repo`, `design_api`, `review_code`, `review_layout`, `improve_copy`, `write_tests`, `summarize_history`, `suggest_next`, `compare_approaches`, `animated_website`
 - 8 built-in domains: `software`, `content`, `research`, `data_analytics`, `product_design`, `marketing`, `ops_process`, `general`
 - 6-phase lifecycle: Task Framing → Requirements → Solution Design → Implementation → Review → Handoff
 
@@ -57,7 +57,7 @@ Initial public release.
 - `token_optimization/compressor.py` — token budget enforcement engine
 
 **Zero-Python workflow**
-- `system_prompt.md` — pre-assembled system prompt (all 8 agents + 10 skills, ~24K tokens)
+- `system_prompt.md` — pre-assembled system prompt (all 8 agents + 10 skills at launch, ~24K tokens)
 - `PROMPT_TEMPLATE.md` — fillable session message template
 
 **Documentation**
