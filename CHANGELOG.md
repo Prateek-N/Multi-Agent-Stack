@@ -1,0 +1,63 @@
+# Changelog
+
+All notable changes to agents-maker are documented here.
+
+Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `Fixed`, `Removed`.
+
+---
+
+## [1.0.0] — 2026-06-27
+
+Initial public release.
+
+### Added
+
+**Core kit**
+- 8 specialist agents: Orchestrator, Architect/Planner, Code Agent, Execution Agent, UI Agent, UX Agent, Reviewer Agent, Compression Agent
+- 10 skill cards: `analyze_repo`, `design_api`, `review_code`, `review_layout`, `improve_copy`, `write_tests`, `summarize_history`, `suggest_next`, `compare_approaches`, `animated_website`
+- 8 built-in domains: `software`, `content`, `research`, `data_analytics`, `product_design`, `marketing`, `ops_process`, `general`
+- 6-phase lifecycle: Task Framing → Requirements → Solution Design → Implementation → Review → Handoff
+
+**Configuration**
+- `config/agents.yaml` — agent registry with routing tags, cost tiers, skill assignments
+- `config/domain_profiles.yaml` — domain detection signals and agent mappings
+- `config/token_policies.yaml` — compression and verbosity presets per phase and domain
+
+**Python tooling**
+- `tools/init_project.py` — one-time project bootstrap with `--update` flag
+- `tools/generate_prompt.py` — daily prompt generator with `--phase`, `--full`, `--compress` flags
+- `tools/validate_kit.py` — 8-check integrity validator
+- `context_loaders/project_summary.py` — stack and structure detection
+- `context_loaders/repo_tree.py` — annotated directory tree generator
+- `context_loaders/file_chunker.py` — large-file token splitter
+- `token_optimization/compressor.py` — token budget enforcement engine
+
+**Zero-Python workflow**
+- `system_prompt.md` — pre-assembled system prompt (all 8 agents + 10 skills, ~24K tokens)
+- `PROMPT_TEMPLATE.md` — fillable session message template
+
+**Documentation**
+- `README.md` — full overview with context guide, domain reference, lifecycle docs
+- `docs/architecture.md` — agent graph, context flow, design decisions
+- `docs/workflows.md` — lifecycle phases and interface contracts
+- `docs/domains.md` — domain plugin schema and built-in domain cards
+- `platforms/claude.md` — Claude Projects and API integration guide
+- `platforms/openai.md` — OpenAI Chat Completions, Assistants, and Agents SDK guide
+- `platforms/antigravity.md` — Antigravity pipeline mapping guide
+- `examples/generic_project_lifecycle.md` — two full annotated lifecycle walkthroughs (software + research)
+
+**Project packaging**
+- `LICENSE` — MIT
+- `CONTRIBUTING.md` — contribution guide
+- `requirements.txt` — `pyyaml>=6.0`
+- `.gitignore` — excludes project-specific state files
+
+---
+
+## How to update
+
+```bash
+git pull origin main
+python tools/validate_kit.py        # verify integrity after any update
+python tools/init_project.py --update   # regenerate system_prompt.md if agents or skills changed
+```

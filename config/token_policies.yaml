@@ -1,0 +1,325 @@
+# Token Policies
+# Controls input compression and output verbosity per workflow.
+#
+# Fields per workflow policy:
+#   max_input_files               - max number of file snippets in context
+#   max_input_tokens              - soft limit (tokens); compression triggered above this
+#   history_summarize_after_turns - turn count that triggers history summarization
+#   output_style                  - default output verbosity preset (see output_styles section)
+#   relevance_drop_threshold      - relevance score [0.0–1.0] below which files are excluded
+#   snippet_max_lines             - lines per file before truncation is applied
+#   snippet_head_lines            - lines kept from start of a truncated file
+#   snippet_tail_lines            - lines kept from end of a truncated file
+
+defaults: &defaults
+  max_input_files: 8
+  max_input_tokens: 24000
+  history_summarize_after_turns: 6
+  output_style: standard
+  relevance_drop_threshold: 0.35
+  snippet_max_lines: 200
+  snippet_head_lines: 40
+  snippet_tail_lines: 40
+
+workflows:
+
+  code_review:
+    <<: *defaults
+    max_input_files: 10
+    max_input_tokens: 20000
+    output_style: review_checklist
+    relevance_drop_threshold: 0.40
+
+  feature_implementation:
+    <<: *defaults
+    max_input_files: 6
+    max_input_tokens: 18000
+    history_summarize_after_turns: 5
+    output_style: detailed_with_code
+
+  feature_design:
+    <<: *defaults
+    max_input_files: 5
+    max_input_tokens: 12000
+    output_style: design_brief
+
+  ui_improvement:
+    <<: *defaults
+    max_input_files: 4
+    max_input_tokens: 10000
+    output_style: design_brief
+    snippet_max_lines: 150
+    snippet_head_lines: 60   # keep more of component props + structure
+    snippet_tail_lines: 30
+
+  ux_critique:
+    <<: *defaults
+    max_input_files: 3
+    max_input_tokens: 8000
+    output_style: concise_bullets
+
+  refactoring:
+    <<: *defaults
+    max_input_files: 6
+    max_input_tokens: 16000
+    output_style: detailed_with_code
+    history_summarize_after_turns: 4
+
+  test_generation:
+    <<: *defaults
+    max_input_files: 5
+    max_input_tokens: 14000
+    output_style: detailed_with_code
+
+  generic_project_lifecycle:
+    <<: *defaults
+    max_input_files: 6
+    max_input_tokens: 16000
+    history_summarize_after_turns: 5
+    output_style: standard
+    run_compression_after_phase: true
+
+    phases:
+
+      task_framing:
+        max_input_files: 0
+        max_input_tokens: 4000
+        history_summarize_after_turns: 3
+        output_style: qa_brief
+        run_compression_after_phase: true
+
+      requirements:
+        max_input_files: 5
+        max_input_tokens: 14000
+        history_summarize_after_turns: 4
+        output_style: requirements_spec
+        run_compression_after_phase: true
+
+      solution_design:
+        max_input_files: 5
+        max_input_tokens: 12000
+        history_summarize_after_turns: 4
+        output_style: solution_design
+        run_compression_after_phase: true
+
+      implementation:
+        max_input_files: 6
+        max_input_tokens: 18000
+        history_summarize_after_turns: 5
+        output_style: implementation_slice
+        run_compression_after_phase: false
+
+      review_refinement:
+        max_input_files: 8
+        max_input_tokens: 20000
+        history_summarize_after_turns: 4
+        output_style: critique_summary
+        run_compression_after_phase: true
+
+      handoff:
+        max_input_files: 3
+        max_input_tokens: 8000
+        history_summarize_after_turns: 3
+        output_style: handoff_package
+        run_compression_after_phase: true
+
+    settings:
+      project_state_snapshot_after_phase: true
+      force_state_block_after_turns: 20
+      cross_session_resume_on_project_state: true
+
+    domains:
+
+      software:
+        implementation:
+          max_input_files: 8
+          max_input_tokens: 22000
+        review_refinement:
+          max_input_files: 10
+          output_style: critique_summary
+
+      content:
+        solution_design:
+          max_input_tokens: 8000
+          output_style: solution_design
+        implementation:
+          max_input_files: 3
+          max_input_tokens: 10000
+
+      research:
+        implementation:
+          max_input_files: 4
+          max_input_tokens: 12000
+        review_refinement:
+          max_input_tokens: 16000
+
+      data_analytics:
+        solution_design:
+          max_input_files: 6
+        implementation:
+          max_input_files: 8
+
+      product_design:
+        solution_design:
+          max_input_files: 4
+          max_input_tokens: 10000
+          output_style: solution_design
+        implementation:
+          max_input_files: 3
+          max_input_tokens: 10000
+        review_refinement:
+          max_input_files: 5
+          max_input_tokens: 14000
+
+      marketing:
+        solution_design:
+          max_input_tokens: 8000
+        implementation:
+          max_input_files: 3
+          max_input_tokens: 10000
+
+      ops_process:
+        solution_design:
+          max_input_files: 3
+          max_input_tokens: 8000
+        implementation:
+          max_input_files: 3
+          max_input_tokens: 10000
+        review_refinement:
+          max_input_files: 4
+          max_input_tokens: 12000
+
+      general:
+        task_framing:
+          max_input_tokens: 8000
+          history_summarize_after_turns: 10
+        requirements:
+          max_input_files: 4
+          max_input_tokens: 12000
+        solution_design:
+          max_input_files: 4
+          max_input_tokens: 12000
+        implementation:
+          max_input_files: 5
+          max_input_tokens: 20000
+          history_summarize_after_turns: 8
+        review_refinement:
+          max_input_files: 6
+          max_input_tokens: 18000
+
+# Output verbosity styles
+# These map to the full definitions in token_optimization/output_styles.md.
+# Keys here must match style keys referenced in workflow policies and agent defaults.
+
+output_styles:
+
+  concise_bullets:
+    description: Short bullet lists, no prose paragraphs. Max 300 words per response.
+    max_response_tokens: 600
+    format_hints:
+      - Use bullet lists for all findings.
+      - One sentence per bullet.
+      - No introductory or closing paragraphs.
+      - Omit explanations unless the reason is non-obvious.
+
+  standard:
+    description: Mix of prose and bullets. Balanced detail. Max 600 words per response.
+    max_response_tokens: 1200
+    format_hints:
+      - Use prose for context, bullets for lists of items.
+      - Include brief rationale for recommendations.
+      - One code snippet maximum unless more are essential.
+
+  detailed_with_code:
+    description: >
+      Full explanations with inline code patches or complete file sections.
+      Used for implementation tasks.
+    max_response_tokens: 3000
+    format_hints:
+      - Include full code blocks with language tags.
+      - Explain non-obvious decisions in 1–2 sentences.
+      - Use diff format (+ / -) when showing changes to existing code.
+      - Add a "What changed and why" summary at the end.
+
+  design_brief:
+    description: >
+      Structured design output: tables, bullet lists, short prose.
+      No inline code unless an interface or schema is being defined.
+    max_response_tokens: 1500
+    format_hints:
+      - Use tables for comparisons and API contracts.
+      - Use numbered lists for sequences and steps.
+      - Use bullet lists for options and trade-offs.
+      - Keep each section under 150 words.
+
+  review_checklist:
+    description: >
+      Tabular review output. Each finding has severity, location, and
+      recommendation. No prose paragraphs.
+    max_response_tokens: 1200
+    format_hints:
+      - Output a markdown table with columns: Severity | File:Line | Issue | Recommendation.
+      - Severity values: critical | high | medium | low | info.
+      - One row per finding.
+      - Add a one-line summary count at the top (e.g., "3 high, 2 medium, 1 low").
+
+  # --- Generic Project Lifecycle styles ---
+
+  qa_brief:
+    description: Numbered question list for task framing. Max 5 questions per turn, no prose.
+    max_response_tokens: 500
+    format_hints:
+      - Numbered list of questions only, no preamble.
+      - Each question is one sentence, max 20 words.
+      - After user answers, emit task_profile block and nothing else.
+
+  requirements_spec:
+    description: Structured tables and bullets covering goals, non-goals, deliverables, constraints, assumptions.
+    max_response_tokens: 1200
+    format_hints:
+      - Required sections: Goals, Non-Goals, Target Audience, Deliverables, Constraints, Assumptions.
+      - "Tag each constraint with its type: [technical], [time], [compliance], [resource], [tone]."
+      - No prose paragraphs longer than 2 sentences.
+
+  solution_design:
+    description: Structured design artifact with Context, Approach, Structure, Risks sections.
+    max_response_tokens: 2000
+    format_hints:
+      - Required sections: Context, Approach, Structure, Risks & Open Questions.
+      - Structure section varies by domain (see docs/domains.md).
+      - Tables for comparisons; numbered lists for sequences.
+      - No implementation code; schemas and interfaces acceptable.
+      - End with numbered Open Questions list.
+
+  implementation_slice:
+    description: Increment plan + work content + approval prompt. One increment at a time.
+    max_response_tokens: 2500
+    format_hints:
+      - Start with 3-line Increment Plan (this slice, depends on, next slice).
+      - Software uses diff format; content uses section heading + body + transition note.
+      - End with "Approve this increment / request changes / change direction?"
+
+  critique_summary:
+    description: Verdict + severity-rated findings table + positive findings + action prompt.
+    max_response_tokens: 1500
+    format_hints:
+      - Open with one-line verdict (ready_to_ship | minor_revisions | significant_revisions).
+      - Table columns: Severity | Area | Issue | Recommendation.
+      - Severity: critical, high, medium, low, info.
+      - Minimum 2 positive findings.
+      - End with "Apply all fixes / apply selected fixes / discuss?"
+
+  handoff_package:
+    description: Summary bullets + how-to steps + prioritized next steps. No prose paragraphs.
+    max_response_tokens: 1200
+    format_hints:
+      - Required sections: Summary (3-5 bullets), How to Use/Run/Deploy, What's Done, What's Next.
+      - What's Next must use P1/P2/P3 priority tiers.
+      - Domain-specific additions (env vars for software, key findings table for research, etc.).
+
+# Compression triggers
+# The Compression Agent is invoked automatically when:
+compression_triggers:
+  context_token_ratio: 0.75   # context exceeds 75% of model's max input tokens
+  history_turns_exceeded: true # turns exceed history_summarize_after_turns for the workflow
+  explicit_user_request: true  # user says "summarize", "compress", "reduce context"
