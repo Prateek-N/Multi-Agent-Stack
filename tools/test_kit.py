@@ -136,13 +136,13 @@ for n, expected_domain, task in domain_tests:
     check(n, f"Domain detection -> {expected_domain}", found, f"task='{task[:50]}...' output snippet: {out[:200]}")
 
 # -------------------------------------------------------------
-# D. validate_kit.py — all 11 checks pass
+# D. validate_kit.py — all 12 checks pass
 # -------------------------------------------------------------
-section("D. validate_kit.py — all 11 checks pass normally")
+section("D. validate_kit.py — all 12 checks pass normally")
 
 rc, out, err = run([PY, "tools/validate_kit.py"])
 check(24, "validate_kit.py exits 0", rc == 0, err[:200])
-check(25, "ALL 11 checks PASSED in output", "ALL 11 checks PASSED" in out, out[-300:])
+check(25, "ALL 12 checks PASSED in output", "ALL 12 checks PASSED" in out, out[-300:])
 
 # -------------------------------------------------------------
 # E. validate_kit.py — failure detection (temporarily corrupt files)
@@ -188,7 +188,7 @@ finally:
 
 # Confirm restore worked
 rc, out, err = run([PY, "tools/validate_kit.py"])
-check(30, "All files restored -> validator passes again", "ALL 11 checks PASSED" in out, out[-200:])
+check(30, "All files restored -> validator passes again", "ALL 12 checks PASSED" in out, out[-200:])
 
 # -------------------------------------------------------------
 # F. Compressor / PolicyLoader — direct import tests

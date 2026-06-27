@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import sys
 import os
 import tempfile
@@ -59,6 +60,41 @@ def detect_stack_from_summary(summary_text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# YAML injection guard — reject strings with characters that break yaml.dump
+# ---------------------------------------------------------------------------
+
+_YAML_UNSAFE = frozenset({'"', "'", ':', '!', '{', '}', '[', ']', '\\', '\n', '\r'})
+
+
+def _sanitize_yaml_str(value: str, field: str) -> str:
+    bad = [c for c in value if c in _YAML_UNSAFE]
+    if bad:
+        safe = "".join(c for c in value if c not in _YAML_UNSAFE)
+        print(
+            f"[WARN] {field!r} contained unsafe YAML characters {sorted(set(bad))} — stripped.",
+            file=sys.stderr,
+        )
+        return safe
+    return value
+
+
+# ---------------------------------------------------------------------------
+# Source hash — lets validate_kit.py detect stale system_prompt.md
+# ---------------------------------------------------------------------------
+
+def _compute_source_hash(kit_dir: Path) -> str:
+    h = hashlib.sha256()
+    agent_files = sorted((kit_dir / "agents").glob("*.md")) if (kit_dir / "agents").is_dir() else []
+    skill_files = sorted((kit_dir / "skills").glob("*.md")) if (kit_dir / "skills").is_dir() else []
+    for path in agent_files + skill_files:
+        try:
+            h.update(path.read_bytes())
+        except (OSError, PermissionError):
+            pass
+    return h.hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------
 # Atomic write helpers (write to temp then os.replace — crash-safe)
 # ---------------------------------------------------------------------------
 
@@ -99,9 +135,10 @@ def build_system_prompt(project_name: str, domain: str, stack: list[str]) -> str
         "compression_agent.md",
     ]
     skill_count = len(list((KIT_DIR / "skills").glob("*.md"))) if (KIT_DIR / "skills").exists() else 0
+    source_hash = _compute_source_hash(KIT_DIR)
     version_header = (
         f"# agents-maker system_prompt.md\n"
-        f"# Version: 1.0 | Generated: {date.today().isoformat()}\n"
+        f"# Version: 1.0 | Generated: {date.today().isoformat()} | Source hash: {source_hash}\n"
         f"# Regenerate: python agents-maker/tools/init_project.py --update\n"
         f"# Contains: {len(agent_order)} agents + {skill_count} skills\n"
         f"#\n"
@@ -281,11 +318,14 @@ def main() -> None:
     session_count = existing_cfg.get("session_count", 0) if args.update else 0
     created_at = existing_cfg.get("created_at", date.today().isoformat()) if args.update else date.today().isoformat()
 
+    safe_name = _sanitize_yaml_str(project_name, "project_name")
+    safe_stack = [_sanitize_yaml_str(s, f"stack[{i}]") for i, s in enumerate(stack)]
+
     project_cfg = {
-        "project_name": project_name,
+        "project_name": safe_name,
         "created_at": created_at,
         "primary_domain": final_domain,
-        "stack": stack,
+        "stack": safe_stack,
         "key_constraints": existing_cfg.get("key_constraints", []) if args.update else [],
         "session_count": session_count,
         "last_session": existing_cfg.get("last_session") if args.update else None,

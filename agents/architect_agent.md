@@ -138,7 +138,7 @@ Default: `design_brief` from `config/token_policies.yaml`.
 
 ## Domain-Specific Behavior
 
-When invoked in `generic_project_lifecycle` Phase 2, select the appropriate output format based on `task_profile.domain`:
+When invoked in `generic_project_lifecycle` Phase 2 — Solution Design (`solution_design`), select the appropriate output format based on `task_profile.domain`:
 
 | Domain | Planning output type | Key artifacts produced |
 |---|---|---|

@@ -116,7 +116,7 @@ Default: `concise_bullets` from `config/token_policies.yaml`.
 
 ## Cross-Domain Adaptation
 
-In `generic_project_lifecycle`, the Experience/Flow Agent is active in Phase 2 (Solution Design) and Phase 4 (Review/Refinement) when the domain involves a multi-step journey.
+In `generic_project_lifecycle`, the Experience/Flow Agent is active in Phase 2 — Solution Design (`solution_design`) and Phase 4 — Review/Refinement (`review_refinement`) when the domain involves a multi-step journey.
 
 | Domain | Journey type | Critique lens |
 |---|---|---|

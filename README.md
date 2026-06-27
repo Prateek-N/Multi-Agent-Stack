@@ -450,11 +450,11 @@ After any edits, run the integrity checker:
 python agents-maker/tools/validate_kit.py
 ```
 
-Runs **11 checks**: YAML parse · agent files + structure · skill files + structure · domain coverage · agent references · output styles · domain scoring · file inventory · compressor dry-run.
+Runs **12 checks**: YAML parse · agent files + structure · skill files + structure · domain coverage · agent references · output styles · domain scoring · file inventory · compressor dry-run · system_prompt.md freshness.
 
 ```
 ============================================================
-  Result: ALL 11 checks PASSED
+  Result: ALL 12 checks PASSED
 ============================================================
 ```
 
@@ -513,7 +513,7 @@ agents-maker/
 ├── 🔧 tools/
 │   ├── init_project.py              ← one-time bootstrap (run once per project)
 │   ├── generate_prompt.py           ← daily driver (run before every session)
-│   ├── validate_kit.py              ← 11-check integrity validator
+│   ├── validate_kit.py              ← 12-check integrity validator
 │   ├── test_kit.py                  ← 60-test edge-case suite (CI + local)
 │   └── domain_utils.py              ← shared domain scoring (used by all 3 tools)
 ├── 🔌 context_loaders/

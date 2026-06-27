@@ -16,10 +16,17 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ### Changed
 - `agents/orchestrator.md` — added domain-phase mapping precedence rule, Phase Exit Criteria table, Phase 5 Handoff procedure spec, and Companion Block Schema
+- `agents/code_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
+- `agents/ux_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
+- `agents/architect_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
 - `config/agents.yaml` — registered `write_process_map` on `execution_agent`, `define_data_schema` on `code_agent`; added routing_priority comment clarifying when it applies vs. domain-phase mapping
 - `token_optimization/output_styles.md` — added Token Cost Tier Definitions table (Low/Medium/High)
-- `tools/init_project.py` — atomic file writes via `tempfile + os.replace`; delegates domain scoring to `domain_utils`
+- `tools/init_project.py` — atomic file writes via `tempfile + os.replace`; delegates domain scoring to `domain_utils`; YAML injection hardening for project_name and stack fields; source hash embedded in system_prompt.md header
 - `tools/generate_prompt.py` — delegates domain scoring to `domain_utils`
+- `tools/validate_kit.py` — check 12: system_prompt.md freshness (source hash comparison)
+- `platforms/claude.md` — added Option C for Claude.ai free tier (no Projects access)
+- `platforms/openai.md` — added Companion Mode subsection with Chat Completions example
+- `requirements.txt` — version cap: `pyyaml>=6.0,<8`
 
 ---
 

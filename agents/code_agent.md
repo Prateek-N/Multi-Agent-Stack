@@ -112,7 +112,7 @@ Default: `detailed_with_code` from `config/token_policies.yaml`.
 
 ## Execution Mode in Generic Project Lifecycle (software domain)
 
-When invoked as the **Phase 3 (Implementation)** agent in `generic_project_lifecycle` with `domain: software` or `domain: data_analytics`:
+When invoked as the **Phase 3 — Implementation (`implementation`)** agent in `generic_project_lifecycle` with `domain: software` or `domain: data_analytics`:
 
 ### Inputs consumed
 

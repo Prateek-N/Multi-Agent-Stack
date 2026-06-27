@@ -214,6 +214,40 @@ Route only to `architect_agent` when thinking is enabled — it is expensive and
 
 ---
 
+## Option C — Claude.ai Free Tier (no Projects access)
+
+If you are on the Claude.ai free plan and do not have access to Projects, use this approach each session:
+
+**1. Open a new Claude.ai conversation.**
+
+**2. Paste `system_prompt.md` as your very first message** (before describing your task):
+
+```
+# Paste the full contents of agents-maker/system_prompt.md here as your first message.
+# On macOS:
+cat agents-maker/system_prompt.md | pbcopy
+
+# On Windows:
+type agents-maker\system_prompt.md | clip
+```
+
+Send this message first. Claude will acknowledge the agent kit and wait for your task.
+
+**3. Send your task using `PROMPT_TEMPLATE.md`:**
+
+Open `PROMPT_TEMPLATE.md`, fill in the blanks, and send it as your second message. Or use the CLI:
+
+```bash
+python agents-maker/tools/generate_prompt.py "your task here"
+# Copy the printed block → paste as your second message
+```
+
+**Limitations vs. Option A (Projects):** The system prompt uses ~6K–24K tokens of your context window each session. On free-tier models, this leaves less room for file content and conversation history. Use `context_loaders/file_chunker.py` with `--max-lines 100` to keep file snippets small.
+
+**Tip:** Save a `project_state.md` at the end of each session by copying the Orchestrator's final state block. Paste it at the start of the next session (after `system_prompt.md`) to resume without replaying history.
+
+---
+
 ## Routing without a project (API-only)
 
 If you cannot use Projects, prepend the relevant agent spec inline:

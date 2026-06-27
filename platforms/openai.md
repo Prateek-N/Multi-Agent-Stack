@@ -4,7 +4,52 @@ How to use this kit with OpenAI: Chat Completions API, Assistants API, and Respo
 
 ---
 
-> Companion Mode works the same across all platforms. See [platforms/claude.md](claude.md) for the full Companion Mode walkthrough, then follow the platform-specific steps below.
+## Using Companion Mode on OpenAI
+
+Companion Mode works the same on OpenAI as on any other platform. Every response ends with a structured `[Companion]` block offering three ranked next steps. Here is the minimal setup using the Chat Completions API:
+
+### One-time setup
+
+```bash
+python agents-maker/tools/init_project.py
+# Generates system_prompt.md — load this as the system role every session
+```
+
+### Before every session
+
+```bash
+python agents-maker/tools/generate_prompt.py "your task here"
+# Copy the printed block → send as the user message
+```
+
+### Minimal Chat Completions example
+
+```python
+from openai import OpenAI
+from pathlib import Path
+
+client = OpenAI()  # reads OPENAI_API_KEY from env
+
+system_prompt = Path("agents-maker/system_prompt.md").read_text(encoding="utf-8")
+
+# Generate a routed prompt with the CLI, then send it:
+user_message = Path("my_prompt.txt").read_text(encoding="utf-8")
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user",   "content": user_message},
+    ],
+    max_tokens=4096,
+)
+print(response.choices[0].message.content)
+# → Response ends with [Companion] block: three ranked next steps
+```
+
+The `system_prompt.md` contains all 8 agents + 12 skills pre-assembled. Pass it once as the `system` role. Use `generate_prompt.py` output as the `user` role each turn. For multi-turn sessions, append prior `assistant` + `user` messages to the `messages` list normally.
+
+See [platforms/claude.md](claude.md) for the full Companion Mode walkthrough and lifecycle example.
 
 ---
 

@@ -5,7 +5,7 @@ validate_kit.py — Multi-Agent Assistant Kit integrity checker.
 Run after any change to config files, agents, skills, or domains:
     python tools/validate_kit.py
 
-Runs 11 checks:
+Runs 12 checks:
   1.    YAML parse — all 3 config files
   2.    Agent .md files exist and have content
   3.    Skill .md files exist and have content
@@ -17,11 +17,13 @@ Runs 11 checks:
   9.    Compressor dry-run (PolicyLoader loads 3 workflows)
   10.   Skill markdown structure (input, output, token cost sections)
   11.   Agent markdown structure (role, goals, context sections)
+  12.   system_prompt.md freshness (source hash matches current agents + skills)
 
 Exit code 0 = all checks pass. Exit code 1 = one or more failures.
 Requires pyyaml (pip install pyyaml).
 """
 
+import hashlib
 import sys
 import re
 from pathlib import Path
@@ -410,6 +412,51 @@ def check_file_inventory() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Check 12 — system_prompt.md freshness
+# ---------------------------------------------------------------------------
+
+def _compute_source_hash(root: Path) -> str:
+    h = hashlib.sha256()
+    agent_files = sorted((root / "agents").glob("*.md")) if (root / "agents").is_dir() else []
+    skill_files = sorted((root / "skills").glob("*.md")) if (root / "skills").is_dir() else []
+    for path in agent_files + skill_files:
+        try:
+            h.update(path.read_bytes())
+        except (OSError, PermissionError):
+            pass
+    return h.hexdigest()[:16]
+
+
+def check_system_prompt_freshness() -> None:
+    print("\n--- system_prompt.md Freshness ---")
+    sp_path = ROOT / "system_prompt.md"
+    if not sp_path.exists():
+        ok("system_prompt.md not present — skipping freshness check (run init_project.py to generate)")
+        return
+
+    try:
+        content = sp_path.read_text(encoding="utf-8")
+    except (OSError, PermissionError) as e:
+        fail(f"Could not read system_prompt.md: {e}")
+        return
+
+    m = re.search(r"Source hash:\s*([a-f0-9]{16})", content)
+    if not m:
+        fail("system_prompt.md has no source hash — regenerate with: python tools/init_project.py --update")
+        return
+
+    stored = m.group(1)
+    current = _compute_source_hash(ROOT)
+    if stored != current:
+        fail(
+            f"system_prompt.md is stale (stored hash {stored} != current {current}). "
+            "Regenerate: python tools/init_project.py --update"
+        )
+    else:
+        ok(f"system_prompt.md is current (source hash: {current})")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -433,8 +480,9 @@ def main() -> int:
     check_compressor()
     check_skill_structure(agents_cfg)
     check_agent_structure(agents_cfg)
+    check_system_prompt_freshness()
 
-    total_checks = 11
+    total_checks = 12
     failed = len(FAILURES)
     passed = total_checks - failed
 
