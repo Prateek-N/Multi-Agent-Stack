@@ -1,0 +1,375 @@
+# Agent Registry
+# Each entry defines one specialist agent.
+#
+# Fields:
+#   name                  - identifier used in orchestrator routing
+#   description           - one-line summary for routing prompt
+#   skills                - list of skill keys (must match filenames in skills/)
+#   routing_tags          - keywords/phrases that trigger this agent (ad-hoc workflows)
+#   roles                 - functional roles in the generic_project_lifecycle
+#   domains               - which domains this agent is primary/secondary for
+#   context_requirement   - full_repo | summarized | snippet_only
+#   cost_tier             - low | medium | high (relative token cost)
+#   default_output_style  - key from token_policies.yaml output_styles
+
+agents:
+
+  orchestrator:
+    name: orchestrator
+    description: >
+      Supervisor agent. Detects domain and task type, drives phase sequence,
+      applies token policies, and aggregates specialist outputs.
+    skills:
+      - analyze_repo
+      - summarize_history
+      - suggest_next
+      - compare_approaches
+    routing_tags: []  # always invoked first; does not match tags
+    roles:
+      - supervisor
+      - phase_driver
+      - task_framing
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: summarized
+    cost_tier: low
+    default_output_style: concise_bullets
+
+  architect_agent:
+    name: architect_agent
+    description: >
+      Architect / Planner. Turns requirements into domain-appropriate solution designs:
+      system architecture (software), document outline (content), research plan (research),
+      campaign strategy (marketing), process map (ops_process).
+    skills:
+      - analyze_repo
+      - design_api
+      - compare_approaches
+    routing_tags:
+      - architecture
+      - system design
+      - api contract
+      - service
+      - microservice
+      - data model
+      - schema
+      - adr
+      - integration
+      - queue
+      - event
+      - database
+      - design
+      - outline
+      - plan
+      - methodology
+      - research design
+      - campaign strategy
+      - process map
+    roles:
+      - planner
+      - architect
+      - solution_design
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: summarized
+    cost_tier: medium
+    default_output_style: solution_design
+
+  code_agent:
+    name: code_agent
+    description: >
+      Execution Agent for the software domain. Implements, refactors, and tests code.
+      In the generic_project_lifecycle, handles Phase 3 (implementation) and Phase 4
+      fix-application for software tasks.
+    skills:
+      - analyze_repo
+      - review_code
+      - write_tests
+      - suggest_next
+      - animated_website
+    routing_tags:
+      - implement
+      - code
+      - refactor
+      - fix
+      - bug
+      - test
+      - migrate
+      - function
+      - class
+      - module
+      - endpoint
+      - script
+    roles:
+      - execution
+      - implementation
+    domains:
+      primary: [software, data_analytics]
+      secondary: []
+    context_requirement: snippet_only
+    cost_tier: medium
+    default_output_style: detailed_with_code
+
+  execution_agent:
+    name: execution_agent
+    description: >
+      Generic Execution Agent for non-software domains. Drafts content, research notes,
+      campaign copy, SOP sections, and any other non-code work product in small,
+      reviewable increments. In the generic_project_lifecycle, handles Phase 3
+      for content, research, marketing, ops_process, and product_design tasks.
+    skills:
+      - summarize_history
+      - improve_copy
+      - design_api
+      - suggest_next
+    routing_tags:
+      - draft
+      - write
+      - section
+      - copy
+      - content
+      - research notes
+      - campaign asset
+      - sop
+      - runbook
+      - brief
+      - document
+    roles:
+      - execution
+      - drafting
+    domains:
+      primary: [content, research, marketing, ops_process, product_design]
+      secondary: [data_analytics]
+    context_requirement: snippet_only
+    cost_tier: medium
+    default_output_style: implementation_slice
+
+  ui_agent:
+    name: ui_agent
+    description: >
+      Presentation / Interface Agent. Component hierarchy, layout, design tokens,
+      and accessibility for any visual medium: UI, document layout, slide/deck
+      structure, information hierarchy, landing pages.
+    skills:
+      - review_layout
+      - improve_copy
+      - animated_website
+    routing_tags:
+      - component
+      - layout
+      - css
+      - react
+      - html
+      - design tokens
+      - spacing
+      - typography
+      - ui
+      - frontend
+      - dashboard
+      - modal
+      - form
+      - table
+      - responsive
+      - slide deck
+      - document layout
+      - information hierarchy
+      - landing page
+    roles:
+      - design
+      - presentation
+    domains:
+      primary: [software, product_design, marketing]
+      secondary: [content, data_analytics]
+    context_requirement: snippet_only
+    cost_tier: low
+    default_output_style: design_brief
+
+  ux_agent:
+    name: ux_agent
+    description: >
+      Experience / Flow Agent. Critiques and improves any multi-step journey:
+      user flows (software), reader journeys (content), process flows (ops),
+      conversion funnels (marketing), onboarding sequences.
+    skills:
+      - review_layout
+      - improve_copy
+    routing_tags:
+      - flow
+      - ux
+      - onboarding
+      - friction
+      - user journey
+      - reader journey
+      - screen
+      - step
+      - drop-off
+      - usability
+      - persona
+      - task completion
+      - funnel
+      - conversion
+      - process flow
+      - reader experience
+    roles:
+      - experience
+      - flow_design
+    domains:
+      primary: [software, product_design, marketing, ops_process]
+      secondary: [content, research]
+    context_requirement: snippet_only
+    cost_tier: low
+    default_output_style: concise_bullets
+
+  reviewer_agent:
+    name: reviewer_agent
+    description: >
+      QA / Review Agent. Performs critical review of any work product:
+      code tests and edge cases (software), clarity and rigor (content/research),
+      data correctness (analytics), brand alignment (marketing),
+      edge case coverage (ops). Owns Phase 4 across all domains.
+    skills:
+      - review_code
+      - review_layout
+      - summarize_history
+      - suggest_next
+    routing_tags:
+      - review
+      - qa
+      - test
+      - quality
+      - critique
+      - check
+      - audit
+      - verify
+      - validate
+      - correctness
+      - coverage
+      - consistency
+    roles:
+      - reviewer
+      - qa
+      - review_refinement
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: snippet_only
+    cost_tier: medium
+    default_output_style: critique_summary
+
+  compression_agent:
+    name: compression_agent
+    description: >
+      Manages context and output compression. Runs after each lifecycle phase
+      to update project_state, and on token-budget triggers during long sessions.
+    skills:
+      - summarize_history
+    routing_tags:
+      - compress
+      - token budget
+      - summarize history
+      - too long
+      - context limit
+      - reduce context
+    roles:
+      - compression
+      - state_management
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: full_repo
+    cost_tier: low
+    default_output_style: concise_bullets
+
+# ---------------------------------------------------------------------------
+# Routing priority (ad-hoc workflows — when multiple tags match)
+# ---------------------------------------------------------------------------
+routing_priority:
+  - architect_agent     # design before implementation
+  - code_agent
+  - execution_agent
+  - ui_agent
+  - ux_agent
+  - reviewer_agent
+  - compression_agent
+
+# ---------------------------------------------------------------------------
+# Generic Project Lifecycle — phase → agent mapping
+# ---------------------------------------------------------------------------
+workflows:
+
+  generic_project_lifecycle:
+    description: Universal 6-phase lifecycle for any complex task across all domains.
+    phases:
+
+      task_framing:
+        primary: orchestrator
+        supporting: []
+        skippable: false
+        merge_with: requirements     # allowed for very small tasks (orchestrator decides)
+        output_artifact: task_profile
+
+      requirements:
+        primary: architect_agent
+        supporting: [orchestrator]
+        skippable: false
+        merge_with: solution_design  # allowed when scope is clear and small
+        output_artifact: requirements_spec
+
+      solution_design:
+        primary: architect_agent
+        supporting: [ui_agent, ux_agent]
+        skippable: false
+        merge_with: null
+        output_artifact: solution_design
+
+      implementation:
+        primary:
+          software: code_agent
+          content: execution_agent
+          research: execution_agent
+          data_analytics: code_agent
+          product_design: execution_agent
+          marketing: execution_agent
+          ops_process: execution_agent
+        supporting: [ui_agent, ux_agent]
+        skippable: false
+        merge_with: null
+        output_artifact: work_product + build_log
+
+      review_refinement:
+        primary: reviewer_agent
+        supporting:
+          software: [code_agent]
+          content: [execution_agent]
+          research: [execution_agent]
+          data_analytics: [code_agent]
+          product_design: [ui_agent, ux_agent]
+          marketing: [execution_agent, ux_agent]
+          ops_process: [execution_agent]
+        skippable: false
+        merge_with: null
+        output_artifact: refinement_report
+
+      handoff:
+        primary: orchestrator
+        supporting: [execution_agent]
+        skippable: false
+        merge_with: null
+        output_artifact: handoff_package
+
+# ---------------------------------------------------------------------------
+# Skill key → file mapping (for validation)
+# ---------------------------------------------------------------------------
+skill_file_map:
+  analyze_repo: skills/analyze_repo.md
+  design_api: skills/design_api.md
+  review_code: skills/review_code.md
+  review_layout: skills/review_layout.md
+  improve_copy: skills/improve_copy.md
+  write_tests: skills/write_tests.md
+  summarize_history: skills/summarize_history.md
+  suggest_next: skills/suggest_next.md
+  compare_approaches: skills/compare_approaches.md
+  animated_website: skills/animated_website.md

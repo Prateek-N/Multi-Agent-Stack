@@ -1,0 +1,356 @@
+# Domain Profiles Registry
+# Single source of truth for domain detection, agent routing, and artifact hints.
+# Replaces hardcoded domain tables in agents/orchestrator.md.
+#
+# To add a new domain: add an entry under "domains:" below.
+# No changes to any agent .md file are required.
+#
+# Detection algorithm (orchestrator):
+#   score(domain) = (strong_matches × 1.0 + weak_matches × 0.4) / 3
+#   Denominator fixed at 3: 3 strong matches = score of 1.0; scores above 1.0 are fine.
+#   If max_score < settings.confidence_threshold  → domain = general + ask clarifying Q
+#   If top-2 scores within settings.ambiguity_threshold → surface both to user
+
+settings:
+  default_domain: general
+  confidence_threshold: 0.40    # below this → use general domain + one clarifying question
+  ambiguity_threshold: 0.10     # if top-2 scores within this margin → ask user to choose
+  allow_extension_domains: true # set false to restrict to built_in domains only
+
+domains:
+
+  software:
+    status: built_in
+    display_name: "Software"
+    description: "Software systems, APIs, microservices, fullstack apps, scripts, and infrastructure."
+    detection_signals:
+      strong:
+        - code
+        - api
+        - microservice
+        - endpoint
+        - deploy
+        - bug
+        - refactor
+        - test
+        - database
+        - backend
+        - frontend
+        - function
+        - class
+        - library
+        - framework
+        - migration
+        - dockerfile
+        - schema
+      weak:
+        - build
+        - service
+        - server
+        - error
+        - log
+        - performance
+        - request
+        - response
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: code_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Service map, API contract, data model, ADRs"
+        structure_note: "Include one ADR per non-obvious architectural decision."
+      handoff:
+        deliverables_label: "Env vars list, migration commands, test run command, deployment steps"
+    token_policy_overrides: {}
+
+  content:
+    status: built_in
+    display_name: "Content"
+    description: "Long-form writing: reports, articles, documentation, white papers, onboarding guides."
+    detection_signals:
+      strong:
+        - write
+        - writing
+        - article
+        - report
+        - document
+        - documentation
+        - guide
+        - draft
+        - essay
+        - blog
+        - whitepaper
+        - tutorial
+        - readme
+      weak:
+        - section
+        - outline
+        - paragraph
+        - tone
+        - audience
+        - publish
+        - edit
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Document outline (H-tree), style guide, argument map"
+        structure_note: "Outline should list every H2 section with a one-line purpose statement."
+      handoff:
+        deliverables_label: "Final document, table of contents, word count, suggested follow-up pieces"
+    token_policy_overrides: {}
+
+  research:
+    status: built_in
+    display_name: "Research"
+    description: "Analysis projects: market studies, literature reviews, competitive landscapes, technical deep dives."
+    detection_signals:
+      strong:
+        - research
+        - analysis
+        - study
+        - literature
+        - literature review
+        - market research
+        - survey
+        - findings
+        - investigate
+        - competitive
+        - landscape
+        - benchmark
+        - deep dive
+        - review
+      weak:
+        - sources
+        - data
+        - evidence
+        - hypothesis
+        - methodology
+        - insight
+        - trend
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Research question hierarchy, methodology, seed source list, analysis framework"
+        structure_note: "Label each research question as RQ1, RQ2… with numbered sub-questions."
+      handoff:
+        deliverables_label: "Key findings table, limitations section, recommended next research steps"
+    token_policy_overrides: {}
+
+  data_analytics:
+    status: built_in
+    display_name: "Data & Analytics"
+    description: "Dashboards, pipelines, experiments, BI reporting, metric definitions, and data models."
+    detection_signals:
+      strong:
+        - dashboard
+        - pipeline
+        - metrics
+        - sql
+        - dbt
+        - etl
+        - analytics
+        - dataset
+        - bigquery
+        - redshift
+        - looker
+        - tableau
+        - experiment
+        - a/b test
+        - kpi
+        - data
+        - analyze
+      weak:
+        - query
+        - table
+        - column
+        - aggregation
+        - report
+        - chart
+        - visualization
+        - schema
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: code_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Data model (fact/dim tables), metric definitions (formula + grain + filter), pipeline DAG"
+        structure_note: "Each metric must specify: formula, grain, filter conditions, and NULL handling."
+      handoff:
+        deliverables_label: "Metric glossary, pipeline runbook, dashboard user guide, data freshness SLA"
+    token_policy_overrides: {}
+
+  product_design:
+    status: built_in
+    display_name: "Product Design"
+    description: "UI/UX design, product specs (PRDs), user story maps, service blueprints, design systems."
+    detection_signals:
+      strong:
+        - product
+        - feature
+        - prd
+        - user story
+        - design system
+        - wireframe
+        - prototype
+        - persona
+        - onboarding
+        - ui
+        - ux
+        - flow
+        - screen
+        - component
+      weak:
+        - user
+        - customer
+        - experience
+        - interface
+        - interaction
+        - journey
+        - friction
+        - design
+        - mobile
+        - checkout
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Feature brief, user journey, screen flow, component hierarchy"
+        structure_note: "User journey must state actor, goal, and key decision points per step."
+      handoff:
+        deliverables_label: "PRD doc, acceptance criteria per story, design handoff notes, open questions log"
+    token_policy_overrides: {}
+
+  marketing:
+    status: built_in
+    display_name: "Marketing"
+    description: "Campaigns, messaging frameworks, content calendars, channel strategies, launch playbooks."
+    detection_signals:
+      strong:
+        - campaign
+        - launch
+        - messaging
+        - channel
+        - funnel
+        - brand
+        - marketing
+        - copy
+        - ad
+        - email
+        - social
+        - landing page
+        - conversion
+        - cta
+        - go-to-market
+        - gtm
+      weak:
+        - audience
+        - segment
+        - reach
+        - engagement
+        - awareness
+        - lead
+        - retention
+        - strategy
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Campaign strategy, messaging framework (positioning + key messages per segment), channel plan"
+        structure_note: "Messaging framework must include: target segment, key message, tone, and primary CTA."
+      handoff:
+        deliverables_label: "Campaign brief, asset checklist, copy document, channel launch calendar"
+    token_policy_overrides: {}
+
+  ops_process:
+    status: built_in
+    display_name: "Operations & Process"
+    description: "SOPs, process maps, RACI matrices, runbooks, workflow automation specs, operational handbooks."
+    detection_signals:
+      strong:
+        - process
+        - sop
+        - workflow
+        - raci
+        - runbook
+        - playbook
+        - procedure
+        - operational
+        - checklist
+        - policy
+        - compliance
+        - governance
+      weak:
+        - step
+        - role
+        - responsibility
+        - approval
+        - escalation
+        - trigger
+        - handoff
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints:
+      solution_design:
+        structure_label: "Process map (numbered steps + decision points), RACI matrix, exception-handling table"
+        structure_note: "Every decision point must have an explicit IF/ELSE branch with next-step references."
+      handoff:
+        deliverables_label: "SOP document, RACI table, process map, training checklist"
+    token_policy_overrides: {}
+
+  general:
+    status: built_in
+    display_name: "General"
+    description: "Catch-all fallback for unrecognized or ambiguous tasks. Uses the full lifecycle with permissive defaults."
+    detection_signals:
+      strong: []    # never auto-detected; only used as explicit fallback
+      weak: []
+    primary_agents:
+      task_framing: orchestrator
+      requirements: architect_agent
+      solution_design: architect_agent
+      implementation: execution_agent
+      review_refinement: reviewer_agent
+      handoff: orchestrator
+    artifact_hints: {}    # no structure hints; agents use domain-neutral defaults
+    token_policy_overrides:
+      task_framing:
+        max_input_tokens: 8000
+        history_summarize_after_turns: 10
+      implementation:
+        max_input_tokens: 20000
+        history_summarize_after_turns: 8

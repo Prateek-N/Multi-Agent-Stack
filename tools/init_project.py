@@ -1,0 +1,374 @@
+#!/usr/bin/env python3
+"""
+init_project.py — One-time project bootstrap for agents-maker Companion Mode.
+
+Usage:
+    python agents-maker/tools/init_project.py
+    python agents-maker/tools/init_project.py --path /your/project
+    python agents-maker/tools/init_project.py --update   # regenerate system_prompt.md
+"""
+
+import argparse
+import sys
+import os
+from datetime import date
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Path setup — allow imports from context_loaders and config
+# ---------------------------------------------------------------------------
+
+SCRIPT_DIR = Path(__file__).resolve().parent       # agents-maker/tools/
+KIT_DIR = SCRIPT_DIR.parent                        # agents-maker/
+sys.path.insert(0, str(KIT_DIR))
+
+try:
+    import yaml
+except ImportError:
+    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
+    sys.exit(1)
+
+try:
+    from context_loaders.project_summary import build_summary
+    from context_loaders.repo_tree import walk_tree, format_tree
+except ImportError as e:
+    print(f"[ERROR] Could not import context_loaders: {e}", file=sys.stderr)
+    print("[ERROR] Make sure you're running from the project root and agents-maker/ is present.", file=sys.stderr)
+    sys.exit(1)
+
+# ---------------------------------------------------------------------------
+# Domain detection (same algorithm as validate_kit.py / orchestrator.md)
+# ---------------------------------------------------------------------------
+
+def _load_yaml(path: Path) -> dict:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except yaml.YAMLError as e:
+        print(f"[ERROR] YAML parse error in {path}: {e}", file=sys.stderr)
+        return {}
+    except FileNotFoundError:
+        return {}
+    except PermissionError:
+        print(f"[ERROR] Permission denied reading {path}", file=sys.stderr)
+        return {}
+
+
+def _score(message: str, domains: dict, settings: dict) -> tuple[str, str]:
+    msg_lower = message.lower()
+    scores: dict[str, float] = {}
+    for d, cfg in domains.items():
+        if d == "general":
+            continue
+        strong = cfg.get("detection_signals", {}).get("strong", [])
+        weak = cfg.get("detection_signals", {}).get("weak", [])
+        s = sum(1.0 for sig in strong if sig in msg_lower)
+        w = sum(0.4 for sig in weak if sig in msg_lower)
+        scores[d] = (s + w) / 3
+
+    if not scores:
+        return "general", "low"
+
+    ranked = sorted(scores.items(), key=lambda x: -x[1])
+    top_d, top_s = ranked[0]
+    sec_d, sec_s = ranked[1] if len(ranked) > 1 else ("general", 0.0)
+
+    conf_t = settings.get("confidence_threshold", 0.40)
+    amb_t = settings.get("ambiguity_threshold", 0.10)
+
+    if top_s < conf_t:
+        return "general", "low"
+    elif (top_s - sec_s) < amb_t:
+        return top_d, "medium"
+    else:
+        return top_d, "high"
+
+
+def detect_domain(summary_text: str) -> tuple[str, str]:
+    domain_cfg_path = KIT_DIR / "config" / "domain_profiles.yaml"
+    if not domain_cfg_path.exists():
+        print(f"[WARN] domain_profiles.yaml not found — defaulting to 'general'", file=sys.stderr)
+        return "general", "low"
+    raw = _load_yaml(domain_cfg_path)
+    if not raw:
+        return "general", "low"
+    domains = raw.get("domains", {})
+    settings = raw.get("detection_settings", {})
+    return _score(summary_text, domains, settings)
+
+
+def detect_stack_from_summary(summary_text: str) -> list[str]:
+    for line in summary_text.splitlines():
+        if line.startswith("**Stack**:"):
+            parts = line.split(":", 1)[1].strip()
+            if parts and parts != "Unknown":
+                return [p.strip() for p in parts.split(",") if p.strip()]
+    return []
+
+
+# ---------------------------------------------------------------------------
+# system_prompt.md builder
+# ---------------------------------------------------------------------------
+
+def build_system_prompt(project_name: str, domain: str, stack: list[str]) -> str:
+    agents_dir = KIT_DIR / "agents"
+    agent_order = [
+        "orchestrator.md",
+        "architect_agent.md",
+        "code_agent.md",
+        "execution_agent.md",
+        "ui_agent.md",
+        "ux_agent.md",
+        "reviewer_agent.md",
+        "compression_agent.md",
+    ]
+    skill_count = len(list((KIT_DIR / "skills").glob("*.md"))) if (KIT_DIR / "skills").exists() else 0
+    version_header = (
+        f"# agents-maker system_prompt.md\n"
+        f"# Version: 1.0 | Generated: {date.today().isoformat()}\n"
+        f"# Regenerate: python agents-maker/tools/init_project.py --update\n"
+        f"# Contains: {len(agent_order)} agents + {skill_count} skills\n"
+        f"#\n"
+        f"# [Companion] INSTRUCTION (always active):\n"
+        f"# After every response append a [Companion] block:\n"
+        f"#   ---\n"
+        f"#   [Companion] Phase: <phase> | Domain: <domain> | Est. token budget used: ~N%\n"
+        f"#   What to do next (pick one):\n"
+        f"#   [Recommended] A: <action>  Command: python agents-maker/tools/generate_prompt.py \"...\"\n"
+        f"#   B: <action>\n"
+        f"#   C: <action>\n"
+        f"#   ---\n"
+    )
+    sections: list[str] = [version_header]
+
+    for fname in agent_order:
+        fpath = agents_dir / fname
+        if fpath.exists():
+            try:
+                content = fpath.read_text(encoding="utf-8").strip()
+                sections.append(content)
+                sections.append("---")
+            except (PermissionError, OSError) as e:
+                print(f"[WARN] Could not read {fpath}: {e}", file=sys.stderr)
+
+    skills_dir = KIT_DIR / "skills"
+    if skills_dir.exists():
+        for skill_file in sorted(skills_dir.glob("*.md")):
+            try:
+                content = skill_file.read_text(encoding="utf-8").strip()
+                sections.append(content)
+                sections.append("---")
+            except (PermissionError, OSError) as e:
+                print(f"[WARN] Could not read {skill_file}: {e}", file=sys.stderr)
+
+    stack_str = ", ".join(stack) if stack else "unknown"
+    context_block = (
+        f"## Project Context\n\n"
+        f"Project name: {project_name}  \n"
+        f"Primary domain: {domain}  \n"
+        f"Stack: {stack_str}  \n"
+        f"Initialized: {date.today().isoformat()}  \n"
+    )
+    sections.append(context_block)
+
+    return "\n\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# project_state.md template
+# ---------------------------------------------------------------------------
+
+STATE_TEMPLATE = """\
+# Project State
+schema_version: "1.0"
+
+## Current Phase
+task_framing
+
+## Domain
+(detected at init — override here if needed)
+
+## Approved Artifacts
+(none yet)
+
+## Open Decisions
+(none yet)
+
+## Build Log
+(empty)
+
+## Session Notes
+(add notes after each session)
+"""
+
+VALID_DOMAINS = [
+    "software", "content", "research", "data_analytics",
+    "product_design", "marketing", "ops_process", "general",
+]
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
+
+    parser = argparse.ArgumentParser(
+        description="Bootstrap agents-maker Companion Mode for a project.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python agents-maker/tools/init_project.py\n"
+            "  python agents-maker/tools/init_project.py --path /my/project\n"
+            "  python agents-maker/tools/init_project.py --update  # regenerate system_prompt.md\n"
+        ),
+    )
+    parser.add_argument(
+        "--path",
+        help="Project root directory (default: parent of agents-maker/)",
+    )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Regenerate system_prompt.md even if it already exists.",
+    )
+    args = parser.parse_args()
+
+    # Resolve project root
+    if args.path:
+        project_root = Path(args.path).resolve()
+    else:
+        project_root = KIT_DIR.parent
+
+    if not project_root.exists():
+        print(f"[ERROR] Project root does not exist: {project_root}", file=sys.stderr)
+        sys.exit(1)
+    if not project_root.is_dir():
+        print(f"[ERROR] Path is not a directory: {project_root}", file=sys.stderr)
+        sys.exit(1)
+
+    project_name = project_root.name
+    print(f"\nInitializing agents-maker for: {project_root}")
+    print("-" * 60)
+
+    # Step 1 — Scan project
+    print("Scanning project...")
+    try:
+        summary_text = build_summary(project_root)
+        tree_entries = walk_tree(project_root, max_depth=3, show_all=False)
+    except Exception as e:
+        print(f"[WARN] Project scan encountered an error: {e}", file=sys.stderr)
+        summary_text = ""
+        tree_entries = []
+
+    # Step 2 — Detect domain
+    detected_domain, confidence = detect_domain(summary_text)
+    stack = detect_stack_from_summary(summary_text)
+
+    print(f"Detected domain : {detected_domain} (confidence: {confidence})")
+    print(f"Detected stack  : {', '.join(stack) if stack else 'unknown'}")
+
+    # Step 3 — Confirm or override domain
+    print(f"\nValid domains: {', '.join(VALID_DOMAINS)}")
+    try:
+        user_input = input(
+            f"Press Enter to accept '{detected_domain}', or type a domain to override: "
+        ).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        user_input = ""
+
+    # Validate user input strictly
+    if not user_input:
+        final_domain = detected_domain
+    elif len(user_input) > 50:
+        print(f"[WARN] Input too long — keeping '{detected_domain}'", file=sys.stderr)
+        final_domain = detected_domain
+    elif not user_input.replace("_", "").isalpha():
+        print(f"[WARN] Invalid domain name (letters and underscores only) — keeping '{detected_domain}'", file=sys.stderr)
+        final_domain = detected_domain
+    elif user_input in VALID_DOMAINS:
+        final_domain = user_input
+        print(f"Using domain: {final_domain}")
+    else:
+        print(f"[WARN] '{user_input}' is not a recognized domain — keeping '{detected_domain}'", file=sys.stderr)
+        final_domain = detected_domain
+
+    # Step 4 — Write config/project.yaml
+    config_dir = KIT_DIR / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    project_yaml_path = config_dir / "project.yaml"
+
+    # Preserve session_count if updating
+    existing_cfg = _load_yaml(project_yaml_path)
+    session_count = existing_cfg.get("session_count", 0) if args.update else 0
+    created_at = existing_cfg.get("created_at", date.today().isoformat()) if args.update else date.today().isoformat()
+
+    project_cfg = {
+        "project_name": project_name,
+        "created_at": created_at,
+        "primary_domain": final_domain,
+        "stack": stack,
+        "key_constraints": existing_cfg.get("key_constraints", []) if args.update else [],
+        "session_count": session_count,
+        "last_session": existing_cfg.get("last_session") if args.update else None,
+    }
+    try:
+        with open(project_yaml_path, "w", encoding="utf-8") as f:
+            yaml.dump(project_cfg, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    except OSError as e:
+        print(f"[ERROR] Could not write project.yaml: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Step 5 — Generate system_prompt.md
+    system_prompt_path = KIT_DIR / "system_prompt.md"
+    if not system_prompt_path.exists() or args.update:
+        system_prompt_text = build_system_prompt(project_name, final_domain, stack)
+        try:
+            system_prompt_path.write_text(system_prompt_text, encoding="utf-8")
+        except OSError as e:
+            print(f"[ERROR] Could not write system_prompt.md: {e}", file=sys.stderr)
+            sys.exit(1)
+        char_count = len(system_prompt_text)
+        token_estimate = char_count // 4
+        system_prompt_status = f"(~{char_count:,} chars, ~{token_estimate:,} tokens)"
+        system_prompt_done = True
+    else:
+        system_prompt_status = "(already exists — use --update to regenerate)"
+        system_prompt_done = False
+
+    # Step 6 — Create project_state.md if absent
+    state_path = KIT_DIR / "project_state.md"
+    if not state_path.exists():
+        try:
+            state_path.write_text(STATE_TEMPLATE, encoding="utf-8")
+            state_created = True
+        except OSError as e:
+            print(f"[ERROR] Could not write project_state.md: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        state_created = False
+
+    # Step 7 — Print summary
+    print()
+    print("=" * 60)
+    try:
+        print(f"  [DONE] {project_yaml_path.relative_to(KIT_DIR.parent)}")
+        tag = "[DONE]" if system_prompt_done else "[SKIP]"
+        print(f"  {tag} {system_prompt_path.relative_to(KIT_DIR.parent)}  {system_prompt_status}")
+        if state_created:
+            print(f"  [DONE] {state_path.relative_to(KIT_DIR.parent)}  (template created)")
+        else:
+            print(f"  [SKIP] project_state.md  (already exists — not overwritten)")
+    except ValueError:
+        print(f"  [DONE] {project_yaml_path}")
+        print(f"  [DONE] {system_prompt_path}")
+    print("=" * 60)
+    print()
+    print("Next: Paste system_prompt.md into your AI tool as the system prompt (do this once).")
+    print('Then: python agents-maker/tools/generate_prompt.py "your first task"')
+    print()
+
+
+if __name__ == "__main__":
+    main()
