@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "agents-maker"
+version = "1.0.0"
+description = "Multi-LLM multi-agent assistant kit — structured AI sessions for any project, any LLM"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Prateek Narvariya", email = "Prateek.Narvariya@silverspaceinc.com" }
+]
+keywords = ["ai", "agents", "llm", "multi-agent", "prompt-engineering", "claude", "openai"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pyyaml>=6.0,<8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+    "mypy>=1.0",
+    "types-PyYAML",
+]
+
+[project.scripts]
+agents-generate = "tools.generate_prompt:main"
+agents-init     = "tools.init_project:main"
+agents-validate = "tools.validate_kit:main"
+
+[project.urls]
+Homepage      = "https://github.com/Prateek-N/Multi-Agent-Stack"
+Repository    = "https://github.com/Prateek-N/Multi-Agent-Stack"
+Issues        = "https://github.com/Prateek-N/Multi-Agent-Stack/issues"
+Changelog     = "https://github.com/Prateek-N/Multi-Agent-Stack/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tools*", "context_loaders*", "token_optimization*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "W191",   # indentation with tabs
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

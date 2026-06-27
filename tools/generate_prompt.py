@@ -37,6 +37,8 @@ except ImportError:
     print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
+__version__ = "1.0.0"
+
 MAX_PROBLEM_LENGTH = 5000
 
 # ---------------------------------------------------------------------------
@@ -334,6 +336,7 @@ def main() -> None:
             '  python agents-maker/tools/generate_prompt.py "add tests" --full\n'
         ),
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("problem", help="What you want to work on this session.")
     parser.add_argument(
         "--phase",
