@@ -10,9 +10,6 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ### Added
 - `tools/generate_claude_md.py` — new CLI tool: writes `CLAUDE.md` to project root for Claude Code integration; reads `config/project.yaml` + `project_state.md`; outputs domain, stack, phase, and agent routing; supports `--dry-run` and `--path` flags
-- `demo/app.py` — Gradio app for HuggingFace Spaces: live domain detection scoring (all 8 domains), agent routing panel, copyable generated prompt block; self-contained with inline fallback signals; runs under 2 seconds per request (no API calls)
-- `actions/review-pr/` — GitHub composite action: runs `reviewer_agent` on any PR diff and posts a severity-rated `refinement_report` comment; supports `model`, `max_files`, `fail_on_critical` inputs; first live Claude API call in the codebase (opt-in, CI-scoped, key-gated)
-- `cookbook/` — 6 complete end-to-end session transcripts (one per major domain): `fastapi-rate-limiter` (software), `react-component-audit` (product_design), `go-to-market-brief` (marketing), `data-pipeline-schema` (data_analytics), `sre-runbook` (ops_process), `research-lit-review` (research); each covers all 6 lifecycle phases with real prompts, real AI excerpts, and real output artifacts
 - `skills/write_process_map.md` — new ops_process skill: numbered step table, RACI matrix, exception-handling table
 - `skills/define_data_schema.md` — new data_analytics skill: ER sketch (ASCII), metric definition table, data dictionary
 - `tools/domain_utils.py` — shared domain scoring module; eliminates duplicated scoring logic across 3 tools
@@ -23,7 +20,6 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 - `agents/code_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
 - `agents/ux_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
 - `agents/architect_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
-- `pyproject.toml` — added `actions = ["anthropic>=0.40"]` optional extra; install with `pip install agents-maker[actions]`
 - `tools/init_project.py` — added `--claude-md` flag: runs `generate_claude_md` after bootstrap and prints CLAUDE.md path; added tip to non-flag summary pointing to `generate_claude_md.py`
 - `config/agents.yaml` — registered `write_process_map` on `execution_agent`, `define_data_schema` on `code_agent`; added routing_priority comment clarifying when it applies vs. domain-phase mapping
 - `token_optimization/output_styles.md` — added Token Cost Tier Definitions table (Low/Medium/High)

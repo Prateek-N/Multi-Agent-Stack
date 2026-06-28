@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python context_loaders/project_summary.py --path .)",
+      "Bash(python -c ' *)",
+      "Bash(python tools/validate_kit.py)",
+      "Bash(python tools/test_kit.py)",
+      "Bash(python tools/generate_prompt.py --version)",
+      "Bash(python tools/init_project.py --version)",
+      "Bash(python tools/validate_kit.py --version)",
+      "Bash(python context_loaders/project_summary.py --version)",
+      "Bash(python context_loaders/repo_tree.py --version)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(python tools/init_project.py --update)"
+    ]
+  }
+}

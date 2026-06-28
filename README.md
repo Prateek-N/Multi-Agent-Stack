@@ -45,21 +45,6 @@
 
 ---
 
-## 📖 Cookbook
-
-Real end-to-end session transcripts — actual prompts, actual AI responses, actual output artifacts. One entry per major domain.
-
-| Domain | Task |
-|---|---|
-| `software` | [Add Redis sliding-window rate limiting to FastAPI](cookbook/fastapi-rate-limiter/session.md) |
-| `product_design` | [UI/UX audit of a B2B SaaS settings page](cookbook/react-component-audit/session.md) |
-| `marketing` | [GTM brief for a developer tool launching on Product Hunt](cookbook/go-to-market-brief/session.md) |
-| `data_analytics` | [ER schema + metrics for a SaaS subscription pipeline](cookbook/data-pipeline-schema/session.md) |
-| `ops_process` | [On-call runbook for PostgreSQL failover (steps + RACI)](cookbook/sre-runbook/session.md) |
-| `research` | [Literature review plan for transformer efficiency survey](cookbook/research-lit-review/session.md) |
-
----
-
 ## ⚡ Quickstart
 
 ### 🪟 Windows
@@ -137,34 +122,6 @@ Active agents: orchestrator, code_agent
 Active skills: review_code, write_tests, suggest_next
 ============================================================
 ```
-
----
-
-## 🚀 Try It Live
-
-**[→ Open the HuggingFace Spaces demo](https://huggingface.co/spaces/Prateek-N/agents-maker)**
-
-Type any task. See live domain detection scoring, agent routing, and the full generated prompt block — instantly, in your browser. No setup, no account.
-
----
-
-## 🔁 GitHub Action — AI PR Reviews
-
-Add structured AI code review to every pull request in 4 lines:
-
-```yaml
-# .github/workflows/review.yml
-- uses: actions/setup-python@v5
-  with:
-    python-version: '3.11'
-- uses: Prateek-N/Multi-Agent-Stack/actions/review-pr@main
-  with:
-    anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-```
-
-Every PR gets a severity-rated `refinement_report` comment — critical, high, medium, low findings with specific recommendations. CI fails on critical findings by default.
-
-See [`actions/review-pr/README.md`](actions/review-pr/README.md) for full setup, model options, and cost estimates.
 
 ---
 
@@ -609,31 +566,8 @@ agents-maker/
 ├── 💰 token_optimization/
 │   ├── output_styles.md             ← style usage guide (definitions in token_policies.yaml)
 │   └── compressor.py                ← token budget enforcement engine
-├── 🎮 demo/
-│   ├── app.py                         ← Gradio app (HuggingFace Spaces)
-│   ├── requirements.txt               ← gradio, pyyaml
-│   └── README.md                      ← Space README with HuggingFace frontmatter
-├── 🔁 actions/
-│   └── review-pr/
-│       ├── action.yml                 ← GitHub composite action definition
-│       ├── run.py                     ← runner: diff fetch, Claude call, PR comment
-│       └── README.md                  ← setup instructions + example output
-├── 📖 examples/
-│   └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
-└── 📖 cookbook/
-    ├── README.md                      ← index of all 6 session transcripts
-    ├── fastapi-rate-limiter/
-    │   └── session.md                 ← software: Redis rate limiting (FastAPI)
-    ├── react-component-audit/
-    │   └── session.md                 ← product_design: UX audit (React settings page)
-    ├── go-to-market-brief/
-    │   └── session.md                 ← marketing: GTM brief (Product Hunt launch)
-    ├── data-pipeline-schema/
-    │   └── session.md                 ← data_analytics: ER schema + metrics (SaaS)
-    ├── sre-runbook/
-    │   └── session.md                 ← ops_process: PostgreSQL failover runbook
-    └── research-lit-review/
-        └── session.md                 ← research: transformer survey lit review
+└── 📖 examples/
+    └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
 ```
 
 ---
