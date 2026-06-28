@@ -207,11 +207,14 @@ Key constraints: no breaking changes to /login, Redis already in use, must suppo
 | AI proposes a breaking API change | AI works around the existing `/login` contract |
 | AI writes a 4,000-word document | AI writes within your 800-word limit |
 
-**`Domain`** — controls which specialist agents activate. Force it with `[domain: X]` in your task:
+**`Domain`** — controls which specialist agents activate. Force it with `[domain: X]` in your task — all 8 domains are supported:
 ```
 ## Task
 [domain: ops_process] Write a runbook for Redis failover.
+[domain: marketing]   Write a go-to-market brief for our SaaS launch.
+[domain: software]    Refactor the auth service — add sliding-window rate limiting.
 ```
+The header shows `(forced)` as the confidence when a prefix is used, so you always know routing was explicit.
 
 ---
 
@@ -304,14 +307,14 @@ implementation
 
 ### 🎯 Phase-Based Context — What to Include Per Phase
 
-| Phase | 📎 Add this to your session message |
+| Phase (`--phase` key) | 📎 Add this to your session message |
 |---|---|
-| **0 — Framing** | Full project context + constraint list. Let the AI ask clarifying questions. |
-| **1 — Requirements** | Non-negotiables, stakeholder constraints, timeline. |
-| **2 — Design** | Existing system diagrams or structure; previous ADRs. |
-| **3 — Implementation** | Relevant code excerpts, file paths, test patterns already in use. |
-| **4 — Review** | What success looks like, known edge cases, compliance checklist. |
-| **5 — Handoff** | Deployment target, who receives the handoff, format preferences. |
+| **Task Framing** (`task_framing`) | Full project context + constraint list. Let the AI ask clarifying questions. |
+| **Requirements** (`requirements`) | Non-negotiables, stakeholder constraints, timeline. |
+| **Solution Design** (`solution_design`) | Existing system diagrams or structure; previous ADRs. |
+| **Implementation** (`implementation`) | Relevant code excerpts, file paths, test patterns already in use. |
+| **Review** (`review_refinement`) | What success looks like, known edge cases, compliance checklist. |
+| **Handoff** (`handoff`) | Deployment target, who receives the handoff, format preferences. |
 
 ---
 
@@ -338,12 +341,23 @@ bash agents-maker/quickstart.sh                          # macOS / Linux / WSL
 python agents-maker/tools/init_project.py
 python agents-maker/tools/init_project.py --path /your/project
 python agents-maker/tools/init_project.py --update       # regenerate system_prompt.md
+python agents-maker/tools/init_project.py --claude-md    # also write CLAUDE.md (Claude Code)
 
 # 💬 Generate a prompt before any AI session
 python agents-maker/tools/generate_prompt.py "describe your task"
+python agents-maker/tools/generate_prompt.py "[domain: software] your task"  # force domain
 python agents-maker/tools/generate_prompt.py "your task" --phase implementation
 python agents-maker/tools/generate_prompt.py "your task" --compress   # add token policy block
 python agents-maker/tools/generate_prompt.py "your task" --full       # embed full system prompt
+
+# 🤖 Claude Code integration (writes CLAUDE.md — auto-loaded every session)
+python agents-maker/tools/generate_claude_md.py
+python agents-maker/tools/generate_claude_md.py --dry-run  # preview without writing
+
+# 📊 Context loaders (paste output alongside your task)
+python agents-maker/context_loaders/project_summary.py --path .
+python agents-maker/context_loaders/repo_tree.py --path .
+python agents-maker/context_loaders/file_chunker.py --path . --files src/main.py
 
 # ✅ Validate kit integrity (run after any edits)
 python agents-maker/tools/validate_kit.py
@@ -353,6 +367,8 @@ python agents-maker/tools/test_kit.py
 ```
 
 **Valid phases:** `task_framing` · `requirements` · `solution_design` · `implementation` · `review_refinement` · `handoff`
+
+**Valid domains for `[domain: X]`:** `software` · `content` · `research` · `data_analytics` · `product_design` · `marketing` · `ops_process` · `general`
 
 ---
 
