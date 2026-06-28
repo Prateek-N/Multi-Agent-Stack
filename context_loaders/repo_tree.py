@@ -156,7 +156,7 @@ def walk_tree(
     return results
 
 
-def format_tree(entries: list[tuple[int, Path, bool]], root: Path) -> str:
+def format_tree(entries: list[tuple[int, Path, bool]], root: Path | None = None) -> str:
     lines: list[str] = []
     for depth, path, is_dir in entries:
         indent = "  " * depth

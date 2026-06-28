@@ -415,12 +415,14 @@ class Compressor:
             (f.path, f.lines_omitted) for f in truncated_files if f.truncated
         ]
 
-        # Estimate token reduction (rough heuristic: 1 token ≈ 4 chars)
-        original_chars = sum(len(f.content) for f in context.files)
-        compressed_chars = sum(len(f.content) for f in truncated_files)
-        if original_chars > 0:
+        # Estimate token reduction from truncation only (not from file drops).
+        # Comparing retained files before vs after truncation gives an accurate
+        # measure of how much the snippet truncator saved.
+        pre_trunc_chars = sum(len(f.content) for f in retained)
+        post_trunc_chars = sum(len(f.content) for f in truncated_files)
+        if pre_trunc_chars > 0:
             report.estimated_token_reduction_pct = round(
-                (1 - compressed_chars / original_chars) * 100, 1
+                (1 - post_trunc_chars / pre_trunc_chars) * 100, 1
             )
 
         compressed = self._assembler.build(

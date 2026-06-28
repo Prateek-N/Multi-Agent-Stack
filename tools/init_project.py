@@ -34,7 +34,7 @@ except ImportError:
 
 try:
     from context_loaders.project_summary import build_summary
-    from context_loaders.repo_tree import walk_tree, format_tree
+    from context_loaders.repo_tree import walk_tree
 except ImportError as e:
     print(f"[ERROR] Could not import context_loaders: {e}", file=sys.stderr)
     print("[ERROR] Make sure you're running from the project root and agents-maker/ is present.", file=sys.stderr)

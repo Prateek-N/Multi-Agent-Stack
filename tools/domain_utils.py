@@ -119,7 +119,7 @@ def detect_domain(
         return ("general", "low", 0.0) if include_score else ("general", "low")
 
     domains = raw.get("domains", {})
-    settings = raw.get("detection_settings", {})
+    settings = raw.get("settings", {})
     return score_domain(message, domains, settings, include_score=include_score)
 
 

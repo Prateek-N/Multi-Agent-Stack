@@ -464,6 +464,7 @@ def main() -> int:
     if "--version" in sys.argv or "-V" in sys.argv:
         print(f"validate_kit.py {__version__}")
         return 0
+    FAILURES.clear()
     print("=" * 60)
     print("  Multi-Agent Assistant Kit — Integrity Checker")
     print(f"  Root: {ROOT}")

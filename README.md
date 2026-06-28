@@ -64,7 +64,7 @@ bash agents-maker/quickstart.sh
 The quickstart script handles everything:
 1. ✅ Checks Python 3.9+
 2. 📦 Installs `pyyaml` (the only dependency)
-3. 🔍 Validates all 11 kit integrity checks
+3. 🔍 Validates all 12 kit integrity checks
 4. 🚀 Runs `init_project.py` to scan your project and generate `system_prompt.md`
 5. 📋 Prints all commands you need, ready to copy-paste
 
@@ -233,13 +233,13 @@ The pattern: **Deliverable + Scope + Success criteria.** Three sentences max.
 
 ```bash
 # Annotated repo tree → paste into session message
-python agents-maker/context_loaders/repo_tree.py
+python agents-maker/context_loaders/repo_tree.py --path .
 
 # Stack + structure summary
-python agents-maker/context_loaders/project_summary.py
+python agents-maker/context_loaders/project_summary.py --path .
 
 # Split a large file into token-safe chunks
-python agents-maker/context_loaders/file_chunker.py src/auth/middleware.py
+python agents-maker/context_loaders/file_chunker.py --path . --files src/auth/middleware.py
 ```
 
 Or paste manually after your `## Task` block:

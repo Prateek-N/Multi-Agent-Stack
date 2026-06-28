@@ -15,6 +15,16 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 - `tools/domain_utils.py` — shared domain scoring module; eliminates duplicated scoring logic across 3 tools
 - `.github/workflows/release.yml` — tag-triggered release workflow: validates, tests, and publishes GitHub Release with CHANGELOG body
 
+### Fixed
+- `tools/domain_utils.py` — wrong YAML key `detection_settings` corrected to `settings`; domain scoring now reads `confidence_threshold` and `ambiguity_threshold` from `config/domain_profiles.yaml` instead of silently using hardcoded defaults
+- `tools/generate_prompt.py` — `[domain: X]` prefix now parsed explicitly before scoring, so all 8 domains can be force-routed (previously only `data_analytics` and `product_design` worked by coincidence); invalid domain names in prefix now print a warning instead of silently falling back
+- `tools/generate_prompt.py` — session_count write to `project.yaml` is now atomic (`tempfile + os.replace`), matching `init_project.py`; previously a crash mid-write could corrupt the config file
+- `tools/validate_kit.py` — `FAILURES` list now cleared at the start of `main()`, preventing stale failures accumulating across multiple calls in the same process
+- `token_optimization/compressor.py` — `estimated_token_reduction_pct` now measures truncation savings only (retained files before vs after truncation), not file drops; previously dropping files inflated the reported reduction percentage
+- `context_loaders/repo_tree.py` — `format_tree()` `root` parameter made optional (`None` default); it was declared but never used in the function body
+- `tools/init_project.py` — removed dead `format_tree` import (imported but never called)
+- `quickstart.sh`, `quickstart.ps1` — context loader example commands now include the required `--path .` argument; previously the shown commands would exit with a usage error
+
 ### Changed
 - `agents/orchestrator.md` — added domain-phase mapping precedence rule, Phase Exit Criteria table, Phase 5 Handoff procedure spec, and Companion Block Schema
 - `agents/code_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format

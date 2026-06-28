@@ -235,9 +235,9 @@ Write-Host "                implementation | review_refinement | handoff"
 Write-Host ""
 Write-Host "  Context loaders (run and paste output with your task)" -ForegroundColor White
 Write-Host ""
-Write-Host "    $PY agents-maker\context_loaders\project_summary.py"
-Write-Host "    $PY agents-maker\context_loaders\repo_tree.py"
-Write-Host "    $PY agents-maker\context_loaders\file_chunker.py --files src\main.py src\auth.py"
+Write-Host "    $PY agents-maker\context_loaders\project_summary.py --path ."
+Write-Host "    $PY agents-maker\context_loaders\repo_tree.py --path ."
+Write-Host "    $PY agents-maker\context_loaders\file_chunker.py --path . --files src\main.py src\auth.py"
 Write-Host ""
 Write-Host "  Keeping system_prompt.md current" -ForegroundColor White
 Write-Host ""

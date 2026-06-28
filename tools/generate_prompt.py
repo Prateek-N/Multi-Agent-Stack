@@ -19,7 +19,10 @@ Usage:
 """
 
 import argparse
+import os
+import re
 import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -339,12 +342,28 @@ def main() -> None:
     except (OSError, PermissionError):
         state_text = ""
 
-    # Detect domain; fall back to project domain if confidence is low
-    domain, confidence, score = detect_domain(args.problem)
-    if confidence == "low" and project_cfg.get("primary_domain"):
-        domain = project_cfg["primary_domain"]
-        confidence = "from-project"
-        score = 0.0
+    # Detect domain: honour explicit [domain: X] prefix first
+    _VALID_DOMAINS = [
+        "software", "content", "research", "data_analytics",
+        "product_design", "marketing", "ops_process", "general",
+    ]
+    _prefix_m = re.match(r"^\[domain:\s*([a-z_]+)\]", args.problem.strip(), re.IGNORECASE)
+    if _prefix_m and _prefix_m.group(1).lower() in _VALID_DOMAINS:
+        domain = _prefix_m.group(1).lower()
+        confidence = "forced"
+        score = 1.0
+    else:
+        if _prefix_m:
+            print(
+                f"[WARN] '[domain: {_prefix_m.group(1)}]' is not a recognized domain — "
+                f"running auto-detection. Valid: {', '.join(_VALID_DOMAINS)}",
+                file=sys.stderr,
+            )
+        domain, confidence, score = detect_domain(args.problem)
+        if confidence == "low" and project_cfg.get("primary_domain"):
+            domain = project_cfg["primary_domain"]
+            confidence = "from-project"
+            score = 0.0
 
     # Determine phase
     if args.phase:
@@ -419,13 +438,17 @@ def main() -> None:
     print('  -> python agents-maker/tools/generate_prompt.py "your next task"')
     print("=" * 60)
 
-    # Silently update session_count + last_session
+    # Silently update session_count + last_session (atomic write — crash-safe)
     if project_yaml_path.exists():
         project_cfg["session_count"] = project_cfg.get("session_count", 0) + 1
         project_cfg["last_session"] = date.today().isoformat()
         try:
-            with open(project_yaml_path, "w", encoding="utf-8") as f:
-                yaml.dump(project_cfg, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            with tempfile.NamedTemporaryFile(
+                "w", dir=project_yaml_path.parent, delete=False, suffix=".tmp", encoding="utf-8"
+            ) as _f:
+                yaml.dump(project_cfg, _f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+                _tmp = _f.name
+            os.replace(_tmp, project_yaml_path)
         except (OSError, PermissionError) as e:
             print(f"[WARN] Could not update session_count in project.yaml: {e}", file=sys.stderr)
 
