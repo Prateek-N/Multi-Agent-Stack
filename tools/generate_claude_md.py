@@ -11,6 +11,8 @@ Usage:
     python agents-maker/tools/generate_claude_md.py --dry-run
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import re

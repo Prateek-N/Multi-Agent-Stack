@@ -6,6 +6,8 @@ Run from the repo root:
     python tools/test_kit.py
 """
 
+from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path

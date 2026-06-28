@@ -8,6 +8,8 @@ Usage:
     python agents-maker/tools/init_project.py --update   # regenerate system_prompt.md
 """
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import os

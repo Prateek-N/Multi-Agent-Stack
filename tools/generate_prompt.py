@@ -18,6 +18,8 @@ Usage:
     python agents-maker/tools/generate_prompt.py "add tests" --full
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import re

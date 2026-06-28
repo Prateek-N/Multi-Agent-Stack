@@ -23,6 +23,8 @@ Exit code 0 = all checks pass. Exit code 1 = one or more failures.
 Requires pyyaml (pip install pyyaml).
 """
 
+from __future__ import annotations
+
 import hashlib
 import re
 import sys
