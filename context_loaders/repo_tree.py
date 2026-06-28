@@ -26,10 +26,8 @@ from __future__ import annotations
 __version__ = "1.0.0"
 
 import argparse
-import os
 import sys
 from pathlib import Path
-
 
 # Files to always exclude from the tree
 DEFAULT_EXCLUDES = frozenset({

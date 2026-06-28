@@ -49,9 +49,11 @@ MAX_PROBLEM_LENGTH = 5000
 # ---------------------------------------------------------------------------
 
 try:
-    from tools.domain_utils import detect_domain as _du_detect, _load_yaml
+    from tools.domain_utils import _load_yaml
+    from tools.domain_utils import detect_domain as _du_detect
 except ImportError:
-    from domain_utils import detect_domain as _du_detect, _load_yaml
+    from domain_utils import _load_yaml
+    from domain_utils import detect_domain as _du_detect
 
 
 def detect_domain(problem: str) -> tuple[str, str, float]:

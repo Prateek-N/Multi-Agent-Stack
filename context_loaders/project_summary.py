@@ -198,7 +198,7 @@ def find_services(root: Path, max_depth: int = 3) -> list[tuple[str, str]]:
             rel = str(entry.relative_to(root)).replace("\\", "/")
             for pattern in SERVICE_DIR_PATTERNS:
                 if pattern in name_lower:
-                    results.append((rel + "/", f"service/handler layer"))
+                    results.append((rel + "/", "service/handler layer"))
                     break
             for pattern in MODEL_DIR_PATTERNS:
                 if pattern in name_lower:

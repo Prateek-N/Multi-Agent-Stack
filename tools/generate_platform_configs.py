@@ -34,15 +34,27 @@ KIT_DIR = SCRIPT_DIR.parent                    # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
 
 try:
-    import yaml
+    import yaml as _yaml_probe  # noqa: F401 — ensures pyyaml is installed
 except ImportError:
     print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
 try:
-    from tools.generate_claude_md import build_claude_md, _parse_phase, _PHASE_AGENTS, _PHASE_LABELS, _AGENT_ROLES
+    from tools.generate_claude_md import (
+        _AGENT_ROLES,
+        _PHASE_AGENTS,
+        _PHASE_LABELS,
+        _parse_phase,
+        build_claude_md,
+    )
 except ImportError:
-    from generate_claude_md import build_claude_md, _parse_phase, _PHASE_AGENTS, _PHASE_LABELS, _AGENT_ROLES
+    from generate_claude_md import (
+        _AGENT_ROLES,
+        _PHASE_AGENTS,
+        _PHASE_LABELS,
+        _parse_phase,
+        build_claude_md,
+    )
 
 try:
     from tools.domain_utils import _load_yaml
@@ -248,20 +260,20 @@ def build_agkit_yaml(
     stack_list = stack if stack else ["unknown"]
 
     lines: list[str] = [
-        f"# agents-maker — Antigravity agkit config",
+        "# agents-maker — Antigravity agkit config",
         f"# Auto-generated: {regen_cmd}",
-        f"# Regenerate after domain/phase changes.",
+        "# Regenerate after domain/phase changes.",
         f"# See {kit_rel_path}/platforms/antigravity.md for integration guide.",
-        f"",
-        f"kit_version: \"1.0\"",
-        f"",
-        f"project:",
+        "",
+        "kit_version: \"1.0\"",
+        "",
+        "project:",
         f"  name: {project_name}",
         f"  domain: {domain}",
         f"  stack: [{', '.join(stack_list)}]",
         f"  phase: {phase}",
-        f"",
-        f"agents:",
+        "",
+        "agents:",
     ]
 
     for agent_id in _AGENT_ORDER:
@@ -275,7 +287,7 @@ def build_agkit_yaml(
         lines.append(f"    description: \"{desc}\"")
         lines.append(f"    system_prompt_file: {_yaml_str(kit_rel_path + '/agents/' + agent_id + '.md')}")
         if always:
-            lines.append(f"    always_active: true")
+            lines.append("    always_active: true")
         else:
             lines.append(f"    active_phases: [{', '.join(phases)}]")
             lines.append(f"    active_domains: [{', '.join(domains)}]")

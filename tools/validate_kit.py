@@ -24,8 +24,8 @@ Requires pyyaml (pip install pyyaml).
 """
 
 import hashlib
-import sys
 import re
+import sys
 from pathlib import Path
 
 __version__ = "1.0.0"
@@ -182,7 +182,7 @@ def check_primary_agents(domain_cfg: dict, agents_cfg: dict) -> None:
         for e in errors:
             fail(e)
     else:
-        ok(f"All domain primary_agents reference valid agent_ids")
+        ok("All domain primary_agents reference valid agent_ids")
 
 
 # ---------------------------------------------------------------------------

@@ -8,8 +8,6 @@ Run from the repo root:
 
 import subprocess
 import sys
-import os
-import shutil
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -198,7 +196,12 @@ section("F. Compressor / PolicyLoader — direct import tests")
 sys.path.insert(0, str(ROOT))
 
 try:
-    from token_optimization.compressor import PolicyLoader, Compressor, ContextBlock, CompressionReport
+    from token_optimization.compressor import (
+        CompressionReport,
+        Compressor,
+        ContextBlock,
+        PolicyLoader,
+    )
 
     loader = PolicyLoader(ROOT / "config" / "token_policies.yaml")
     loader.load()
@@ -240,7 +243,7 @@ try:
 
 except ImportError as e:
     for n in range(31, 39):
-        check(n, f"Compressor import test", False, str(e))
+        check(n, "Compressor import test", False, str(e))
 
 # -------------------------------------------------------------
 # G. Context loaders — smoke tests

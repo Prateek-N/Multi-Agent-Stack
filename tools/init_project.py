@@ -10,8 +10,8 @@ Usage:
 
 import argparse
 import hashlib
-import sys
 import os
+import sys
 import tempfile
 from datetime import date
 from pathlib import Path
@@ -41,9 +41,11 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from tools.domain_utils import detect_domain as _detect_domain, _load_yaml
+    from tools.domain_utils import _load_yaml
+    from tools.domain_utils import detect_domain as _detect_domain
 except ImportError:
-    from domain_utils import detect_domain as _detect_domain, _load_yaml
+    from domain_utils import _load_yaml
+    from domain_utils import detect_domain as _detect_domain
 
 
 def detect_domain(summary_text: str) -> tuple[str, str]:
@@ -285,11 +287,10 @@ def main() -> None:
     print("Scanning project...")
     try:
         summary_text = build_summary(project_root)
-        tree_entries = walk_tree(project_root, max_depth=3, show_all=False)
+        walk_tree(project_root, max_depth=3, show_all=False)
     except Exception as e:
         print(f"[WARN] Project scan encountered an error: {e}", file=sys.stderr)
         summary_text = ""
-        tree_entries = []
 
     # Step 2 — Detect domain
     detected_domain, confidence = detect_domain(summary_text)
@@ -390,7 +391,7 @@ def main() -> None:
         if state_created:
             print(f"  [DONE] {state_path.relative_to(KIT_DIR.parent)}  (template created)")
         else:
-            print(f"  [SKIP] project_state.md  (already exists — not overwritten)")
+            print("  [SKIP] project_state.md  (already exists — not overwritten)")
     except ValueError:
         print(f"  [DONE] {project_yaml_path}")
         print(f"  [DONE] {system_prompt_path}")
@@ -403,18 +404,18 @@ def main() -> None:
     # --platforms: generate configs for all supported AI platforms
     if args.platforms:
         try:
-            from tools.generate_platform_configs import generate_all, PLATFORMS
+            from tools.generate_platform_configs import PLATFORMS, generate_all
         except ImportError:
-            from generate_platform_configs import generate_all, PLATFORMS
+            from generate_platform_configs import PLATFORMS, generate_all
         print("Generating platform configs (Claude Code, Copilot, Cursor, Antigravity)...")
         generate_all(project_root, KIT_DIR, PLATFORMS, dry_run=False)
 
     # --claude-md: generate CLAUDE.md only (kept for backward compatibility)
     elif args.claude_md:
         try:
-            from tools.generate_claude_md import build_claude_md, _parse_phase
+            from tools.generate_claude_md import _parse_phase, build_claude_md
         except ImportError:
-            from generate_claude_md import build_claude_md, _parse_phase
+            from generate_claude_md import _parse_phase, build_claude_md
 
         state_path = KIT_DIR / "project_state.md"
         phase = _parse_phase(state_path.read_text(encoding="utf-8")) if state_path.exists() else "task_framing"

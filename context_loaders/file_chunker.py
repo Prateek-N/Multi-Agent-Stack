@@ -38,7 +38,6 @@ import argparse
 import sys
 from pathlib import Path
 
-
 # Default truncation settings (matches token_optimization defaults)
 DEFAULT_MAX_LINES = 200
 DEFAULT_HEAD_LINES = 40
