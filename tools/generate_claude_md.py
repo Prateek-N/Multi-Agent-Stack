@@ -12,8 +12,10 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 __version__ = "1.0.0"
@@ -99,6 +101,12 @@ _AGENT_ROLES: dict[str, str] = {
 }
 
 
+def _py(kit_rel: str, tool: str) -> str:
+    """Return a shell-safe 'python ...' invocation. Quotes the full path when it contains spaces."""
+    path = f"{kit_rel}/tools/{tool}"
+    return f'python "{path}"' if " " in path else f"python {path}"
+
+
 def _active_agents(domain: str, phase: str) -> list[str]:
     phase_map = _PHASE_AGENTS.get(phase, {"_all": ["orchestrator"]})
     return phase_map.get(domain, phase_map["_all"])
@@ -122,14 +130,13 @@ def build_claude_md(
     agent_list = ", ".join(
         f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents
     )
-
-    # Quote path in shell commands if it contains spaces
-    cmd_path = f'"{kit_rel_path}"' if " " in kit_rel_path else kit_rel_path
+    regen_cmd = _py(kit_rel_path, "generate_claude_md.py")
+    prompt_cmd = _py(kit_rel_path, "generate_prompt.py")
 
     return (
         f"# agents-maker — Project AI Config\n"
-        f"# Auto-generated: python {cmd_path}/tools/generate_claude_md.py\n"
-        f"# Regenerate after domain/phase changes: python {cmd_path}/tools/generate_claude_md.py\n"
+        f"# Auto-generated: {regen_cmd}\n"
+        f"# Regenerate after domain/phase changes: {regen_cmd}\n"
         f"\n"
         f"## Active Domain\n"
         f"{domain}  (confidence: {confidence})\n"
@@ -151,7 +158,7 @@ def build_claude_md(
         f"\n"
         f"## Kit Location\n"
         f"{kit_rel_path}/ (relative to project root)\n"
-        f'Generate a fresh prompt: `python {cmd_path}/tools/generate_prompt.py "your task"`\n'
+        f'Generate a fresh prompt: `{prompt_cmd} "your task"`\n'
     )
 
 
@@ -241,7 +248,10 @@ def main() -> None:
         return
 
     out_path = project_root / "CLAUDE.md"
-    out_path.write_text(content, encoding="utf-8")
+    with tempfile.NamedTemporaryFile("w", dir=out_path.parent, delete=False, suffix=".tmp", encoding="utf-8") as f:
+        f.write(content)
+        tmp = f.name
+    os.replace(tmp, out_path)
 
     print(f"\nWritten: {out_path}")
     print(f"  Domain : {domain}  (confidence: {confidence})")

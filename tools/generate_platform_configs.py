@@ -64,6 +64,19 @@ def _agent_list_str(agents: list[str]) -> str:
     return ", ".join(f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents)
 
 
+def _py(kit_rel: str, tool: str) -> str:
+    """Return a shell-safe 'python ...' invocation. Quotes the full path when it contains spaces."""
+    path = f"{kit_rel}/tools/{tool}"
+    return f'python "{path}"' if " " in path else f"python {path}"
+
+
+def _yaml_str(value: str) -> str:
+    """Return a YAML-safe scalar: quoted if it contains spaces or YAML special characters."""
+    if " " in value or any(c in value for c in ":{}[]#&*!|>'\"%@`"):
+        return f'"{value}"'
+    return value
+
+
 def _atomic_write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
@@ -89,7 +102,7 @@ def build_copilot_md(
     stack_str = ", ".join(stack) if stack else "unknown"
     phase_label = _PHASE_LABELS.get(phase, phase)
     agents = _active_agents(domain, phase)
-    cmd_path = f'"{kit_rel_path}"' if " " in kit_rel_path else kit_rel_path
+    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
 
     all_agents = [
         "orchestrator (routing — always active)",
@@ -104,7 +117,7 @@ def build_copilot_md(
 
     return (
         f"# agents-maker — GitHub Copilot Instructions\n"
-        f"# Auto-generated: python {cmd_path}/tools/generate_platform_configs.py\n"
+        f"# Auto-generated: {regen_cmd}\n"
         f"# Regenerate after domain/phase changes.\n"
         f"\n"
         f"## Project Context\n"
@@ -129,7 +142,7 @@ def build_copilot_md(
         f"\n"
         f"## Kit Location\n"
         f"{kit_rel_path}/\n"
-        f"Regenerate: `python {cmd_path}/tools/generate_platform_configs.py`\n"
+        f"Regenerate: `{regen_cmd}`\n"
     )
 
 
@@ -148,11 +161,11 @@ def build_cursor_rules(
     stack_str = ", ".join(stack) if stack else "unknown"
     phase_label = _PHASE_LABELS.get(phase, phase)
     agents = _active_agents(domain, phase)
-    cmd_path = f'"{kit_rel_path}"' if " " in kit_rel_path else kit_rel_path
+    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
 
     return (
         f"# agents-maker — Cursor Rules\n"
-        f"# Auto-generated: python {cmd_path}/tools/generate_platform_configs.py\n"
+        f"# Auto-generated: {regen_cmd}\n"
         f"# Regenerate after domain/phase changes.\n"
         f"\n"
         f"## Active Domain\n"
@@ -177,7 +190,7 @@ def build_cursor_rules(
         f"\n"
         f"## Kit Location\n"
         f"{kit_rel_path}/\n"
-        f"Regenerate: `python {cmd_path}/tools/generate_platform_configs.py`\n"
+        f"Regenerate: `{regen_cmd}`\n"
     )
 
 
@@ -231,12 +244,12 @@ def build_agkit_yaml(
     phase: str,
     kit_rel_path: str,
 ) -> str:
-    cmd_path = f'"{kit_rel_path}"' if " " in kit_rel_path else kit_rel_path
+    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
     stack_list = stack if stack else ["unknown"]
 
     lines: list[str] = [
         f"# agents-maker — Antigravity agkit config",
-        f"# Auto-generated: python {cmd_path}/tools/generate_platform_configs.py",
+        f"# Auto-generated: {regen_cmd}",
         f"# Regenerate after domain/phase changes.",
         f"# See {kit_rel_path}/platforms/antigravity.md for integration guide.",
         f"",
@@ -260,7 +273,7 @@ def build_agkit_yaml(
         lines.append(f"  {agent_id}:")
         lines.append(f"    role: {_AGENT_ROLES.get(agent_id, 'specialist')}")
         lines.append(f"    description: \"{desc}\"")
-        lines.append(f"    system_prompt_file: {kit_rel_path}/agents/{agent_id}.md")
+        lines.append(f"    system_prompt_file: {_yaml_str(kit_rel_path + '/agents/' + agent_id + '.md')}")
         if always:
             lines.append(f"    always_active: true")
         else:
@@ -271,11 +284,11 @@ def build_agkit_yaml(
     lines += [
         "context:",
         "  inject_globally:",
-        f"    - {kit_rel_path}/config/agents.yaml",
-        f"    - {kit_rel_path}/config/domain_profiles.yaml",
-        f"    - {kit_rel_path}/config/token_policies.yaml",
+        f"    - {_yaml_str(kit_rel_path + '/config/agents.yaml')}",
+        f"    - {_yaml_str(kit_rel_path + '/config/domain_profiles.yaml')}",
+        f"    - {_yaml_str(kit_rel_path + '/config/token_policies.yaml')}",
         "  inject_per_session:",
-        f"    - {kit_rel_path}/project_state.md",
+        f"    - {_yaml_str(kit_rel_path + '/project_state.md')}",
         "",
         "skills:",
     ]
@@ -296,7 +309,7 @@ def build_agkit_yaml(
     ]
     for key, trigger in skills:
         lines.append(f"  {key}:")
-        lines.append(f"    skill_file: {kit_rel_path}/skills/{key}.md")
+        lines.append(f"    skill_file: {_yaml_str(kit_rel_path + '/skills/' + key + '.md')}")
         lines.append(f"    trigger: \"{trigger}\"")
         lines.append("")
 
