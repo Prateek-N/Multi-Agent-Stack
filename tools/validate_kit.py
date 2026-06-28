@@ -421,7 +421,7 @@ def _compute_source_hash(root: Path) -> str:
     skill_files = sorted((root / "skills").glob("*.md")) if (root / "skills").is_dir() else []
     for path in agent_files + skill_files:
         try:
-            h.update(path.read_bytes())
+            h.update(path.read_bytes().replace(b"\r\n", b"\n"))
         except (OSError, PermissionError):
             pass
     return h.hexdigest()[:16]

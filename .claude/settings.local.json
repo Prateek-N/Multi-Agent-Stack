@@ -13,7 +13,8 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(python tools/init_project.py --update)"
+      "Bash(python tools/init_project.py --update)",
+      "Bash(python tools/generate_platform_configs.py --dry-run)"
     ]
   }
 }
