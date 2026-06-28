@@ -140,6 +140,14 @@ Active skills: review_code, write_tests, suggest_next
 
 ---
 
+## 🚀 Try It Live
+
+**[→ Open the HuggingFace Spaces demo](https://huggingface.co/spaces/Prateek-N/agents-maker)**
+
+Type any task. See live domain detection scoring, agent routing, and the full generated prompt block — instantly, in your browser. No setup, no account.
+
+---
+
 ## 🔁 GitHub Action — AI PR Reviews
 
 Add structured AI code review to every pull request in 4 lines:
@@ -601,6 +609,10 @@ agents-maker/
 ├── 💰 token_optimization/
 │   ├── output_styles.md             ← style usage guide (definitions in token_policies.yaml)
 │   └── compressor.py                ← token budget enforcement engine
+├── 🎮 demo/
+│   ├── app.py                         ← Gradio app (HuggingFace Spaces)
+│   ├── requirements.txt               ← gradio, pyyaml
+│   └── README.md                      ← Space README with HuggingFace frontmatter
 ├── 🔁 actions/
 │   └── review-pr/
 │       ├── action.yml                 ← GitHub composite action definition
