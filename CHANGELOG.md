@@ -9,6 +9,7 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 ## [Unreleased]
 
 ### Added
+- `tools/generate_platform_configs.py` — new CLI tool: generates native config files for all major AI platforms from a single command; writes `CLAUDE.md` (Claude Code), `.github/copilot-instructions.md` (GitHub Copilot), `.cursor/rules` (Cursor), and `.agkit/agents.yaml` (Antigravity); supports `--platforms` (subset), `--dry-run`, and `--path` flags; all output files are atomic-written and safe to commit
 - `tools/generate_claude_md.py` — new CLI tool: writes `CLAUDE.md` to project root for Claude Code integration; reads `config/project.yaml` + `project_state.md`; outputs domain, stack, phase, and agent routing; supports `--dry-run` and `--path` flags
 - `skills/write_process_map.md` — new ops_process skill: numbered step table, RACI matrix, exception-handling table
 - `skills/define_data_schema.md` — new data_analytics skill: ER sketch (ASCII), metric definition table, data dictionary
@@ -30,7 +31,7 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 - `agents/code_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
 - `agents/ux_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
 - `agents/architect_agent.md` — standardized phase nomenclature to "Phase N — Name (`phase_key`)" format
-- `tools/init_project.py` — added `--claude-md` flag: runs `generate_claude_md` after bootstrap and prints CLAUDE.md path; added tip to non-flag summary pointing to `generate_claude_md.py`
+- `tools/init_project.py` — added `--platforms` flag: runs `generate_platform_configs` for all 4 platforms after bootstrap; added `--claude-md` flag (Claude Code only, kept for backward compatibility); tip in non-flag summary now points to `generate_platform_configs.py`
 - `config/agents.yaml` — registered `write_process_map` on `execution_agent`, `define_data_schema` on `code_agent`; added routing_priority comment clarifying when it applies vs. domain-phase mapping
 - `token_optimization/output_styles.md` — added Token Cost Tier Definitions table (Low/Medium/High)
 - `tools/init_project.py` — atomic file writes via `tempfile + os.replace`; delegates domain scoring to `domain_utils`; YAML injection hardening for project_name and stack fields; source hash embedded in system_prompt.md header

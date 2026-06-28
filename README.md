@@ -125,15 +125,40 @@ Active skills: review_code, write_tests, suggest_next
 
 ---
 
-## 🤖 Claude Code Integration
+## 🌐 Platform Integration
 
-If you use [Claude Code](https://claude.ai/code), one extra command wires agents-maker permanently into every session — no copy-paste, no CLI step before every message:
+One command wires agents-maker into every AI platform you use. Run it once after init:
 
 ```bash
-python agents-maker/tools/generate_claude_md.py
+python agents-maker/tools/generate_platform_configs.py
 ```
 
-This writes a `CLAUDE.md` to your project root. Claude Code auto-reads it on every launch, so your **domain, stack, phase, and agent routing** are always loaded silently.
+This writes a native config file for each platform — committed to git, auto-loaded on every session, no copy-paste required:
+
+| Platform | Config file written | What it does |
+|---|---|---|
+| 🟣 **Claude Code** | `CLAUDE.md` | Auto-read every session — domain, stack, phase, agent routing loaded silently |
+| 🟢 **GitHub Copilot** | `.github/copilot-instructions.md` | Workspace-level instructions — Copilot applies agent routing on every suggestion |
+| 🔵 **Cursor** | `.cursor/rules` | Persistent AI rules — Cursor applies domain context across all tabs |
+| ⚡ **Antigravity** | `.agkit/agents.yaml` | Full agent pipeline config — all 8 agents + 12 skills registered with phase/domain wiring |
+
+**Commit all generated files** — they are project config, not private state. Every developer who clones the repo gets the full multi-agent setup automatically.
+
+```bash
+# Generate for all platforms (default)
+python agents-maker/tools/generate_platform_configs.py
+
+# Generate for specific platforms only
+python agents-maker/tools/generate_platform_configs.py --platforms claude copilot
+
+# Preview without writing
+python agents-maker/tools/generate_platform_configs.py --dry-run
+
+# Or generate during init
+python agents-maker/tools/init_project.py --platforms
+```
+
+Regenerate whenever your domain, stack, or phase changes.
 
 ```markdown
 # agents-maker — Project AI Config
@@ -153,15 +178,6 @@ Orchestrator is always active. Specialist agents: code_agent (implementation), r
 ## Session Instructions
 - Apply domain routing and phase context from agents-maker before every task.
 - After every response: append a [Companion] block with 3 ranked next steps.
-```
-
-Commit `CLAUDE.md` to git — it's project config, not private state. The whole team gets the context automatically.
-
-Regenerate whenever your phase or stack changes:
-```bash
-python agents-maker/tools/generate_claude_md.py   # refresh domain/phase
-# or, during init:
-python agents-maker/tools/init_project.py --claude-md
 ```
 
 ---
@@ -350,9 +366,11 @@ python agents-maker/tools/generate_prompt.py "your task" --phase implementation
 python agents-maker/tools/generate_prompt.py "your task" --compress   # add token policy block
 python agents-maker/tools/generate_prompt.py "your task" --full       # embed full system prompt
 
-# 🤖 Claude Code integration (writes CLAUDE.md — auto-loaded every session)
-python agents-maker/tools/generate_claude_md.py
-python agents-maker/tools/generate_claude_md.py --dry-run  # preview without writing
+# 🌐 Wire into all AI platforms (Claude Code, Copilot, Cursor, Antigravity)
+python agents-maker/tools/generate_platform_configs.py
+python agents-maker/tools/generate_platform_configs.py --platforms claude copilot
+python agents-maker/tools/generate_platform_configs.py --dry-run  # preview without writing
+python agents-maker/tools/init_project.py --platforms              # generate during init
 
 # 📊 Context loaders (paste output alongside your task)
 python agents-maker/context_loaders/project_summary.py --path .
@@ -571,6 +589,7 @@ agents-maker/
 ├── 🔧 tools/
 │   ├── init_project.py              ← one-time bootstrap (run once per project)
 │   ├── generate_prompt.py           ← daily driver (run before every session)
+│   ├── generate_platform_configs.py ← wire into Claude Code, Copilot, Cursor, Antigravity
 │   ├── generate_claude_md.py        ← writes CLAUDE.md for Claude Code integration
 │   ├── validate_kit.py              ← 12-check integrity validator
 │   ├── test_kit.py                  ← 60-test edge-case suite (CI + local)

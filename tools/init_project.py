@@ -252,6 +252,16 @@ def main() -> None:
         action="store_true",
         help="Also generate CLAUDE.md in the project root (Claude Code integration).",
     )
+    parser.add_argument(
+        "--platforms",
+        action="store_true",
+        help=(
+            "Generate config files for ALL supported platforms: "
+            "Claude Code (CLAUDE.md), GitHub Copilot (.github/copilot-instructions.md), "
+            "Cursor (.cursor/rules), Antigravity (.agkit/agents.yaml). "
+            "Supersedes --claude-md."
+        ),
+    )
     args = parser.parse_args()
 
     # Resolve project root
@@ -390,8 +400,17 @@ def main() -> None:
     print('Then: python agents-maker/tools/generate_prompt.py "your first task"')
     print()
 
-    # --claude-md: generate CLAUDE.md for Claude Code integration
-    if args.claude_md:
+    # --platforms: generate configs for all supported AI platforms
+    if args.platforms:
+        try:
+            from tools.generate_platform_configs import generate_all, PLATFORMS
+        except ImportError:
+            from generate_platform_configs import generate_all, PLATFORMS
+        print("Generating platform configs (Claude Code, Copilot, Cursor, Antigravity)...")
+        generate_all(project_root, KIT_DIR, PLATFORMS, dry_run=False)
+
+    # --claude-md: generate CLAUDE.md only (kept for backward compatibility)
+    elif args.claude_md:
         try:
             from tools.generate_claude_md import build_claude_md, _parse_phase
         except ImportError:
@@ -423,8 +442,8 @@ def main() -> None:
             print(f"  [WARN] Could not write CLAUDE.md: {e}", file=sys.stderr)
         print()
     else:
-        print("Tip: Add Claude Code integration (one command, permanent context):")
-        print("     python agents-maker/tools/generate_claude_md.py")
+        print("Tip: Wire agents-maker into Claude Code, Copilot, Cursor, and Antigravity:")
+        print("     python agents-maker/tools/generate_platform_configs.py")
         print()
 
 
