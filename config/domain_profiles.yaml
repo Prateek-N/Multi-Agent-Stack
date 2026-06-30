@@ -43,15 +43,30 @@ domains:
         - migration
         - dockerfile
         - schema
+        - middleware
+        - authentication
+        - auth
+        - redis
+        - cache
+        - rate limit
+        - http
+        - postgresql
+        - mysql
+        - orm
+        - transaction
+        - latency
       weak:
         - build
         - service
         - server
         - error
-        - log
         - performance
         - request
         - response
+        - optimize
+        - bottleneck
+        - rest
+        - graphql
     primary_agents:
       task_framing: orchestrator
       requirements: architect_agent
@@ -86,6 +101,10 @@ domains:
         - whitepaper
         - tutorial
         - readme
+        - create
+        - produce
+        - craft
+        - blog post
       weak:
         - section
         - outline
@@ -129,6 +148,9 @@ domains:
         - benchmark
         - deep dive
         - review
+        - synthesize
+        - interviews
+        - themes
       weak:
         - sources
         - data
@@ -137,6 +159,12 @@ domains:
         - methodology
         - insight
         - trend
+        - explore
+        - examine
+        - insights
+        - overview
+        - analyze
+        - state
     primary_agents:
       task_framing: orchestrator
       requirements: architect_agent
@@ -161,7 +189,6 @@ domains:
         - dashboard
         - pipeline
         - metrics
-        - sql
         - dbt
         - etl
         - analytics
@@ -173,8 +200,9 @@ domains:
         - experiment
         - a/b test
         - kpi
-        - data
         - analyze
+        - conversion
+        - measure
       weak:
         - query
         - table
@@ -184,6 +212,9 @@ domains:
         - chart
         - visualization
         - schema
+        - sql
+        - data
+        - impact
     primary_agents:
       task_framing: orchestrator
       requirements: architect_agent
@@ -309,6 +340,10 @@ domains:
         - policy
         - compliance
         - governance
+        - incident
+        - outage
+        - on-call
+        - sla
       weak:
         - step
         - role
@@ -317,6 +352,9 @@ domains:
         - escalation
         - trigger
         - handoff
+        - production
+        - alert
+        - severity
     primary_agents:
       task_framing: orchestrator
       requirements: architect_agent
