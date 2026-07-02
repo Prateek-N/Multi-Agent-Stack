@@ -1,5 +1,5 @@
 # agents-maker system_prompt.md
-# Version: 1.0 | Generated: 2026-06-28 | Source hash: 5e868b2469060337
+# Version: 1.0 | Generated: 2026-06-30 | Source hash: 5e868b2469060337
 # Regenerate: python agents-maker/tools/init_project.py --update
 # Contains: 8 agents + 12 skills
 #
@@ -2962,7 +2962,7 @@ Compression hint: request `test_type: unit` and `coverage_targets: happy_path_on
 
 ## Project Context
 
-Project name: agents maker  
+Project name: your-project  
 Primary domain: software  
-Stack: Python  
-Initialized: 2026-06-28  
+Stack: unknown  
+Initialized: run `python agents-maker/tools/init_project.py` to personalise  
