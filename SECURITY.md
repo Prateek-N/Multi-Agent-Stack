@@ -26,7 +26,7 @@ The following are **out of scope**:
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Report vulnerabilities by email to: **Prateek.Narvariya@silverspaceinc.com**
+Report vulnerabilities via [GitHub Security Advisories](https://github.com/Prateek-N/Multi-Agent-Stack/security/advisories/new) — click **"Report a vulnerability"** on the Security tab.
 
 Please include in your report:
 

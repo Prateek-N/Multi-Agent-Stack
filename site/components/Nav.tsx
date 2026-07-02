@@ -1,3 +1,5 @@
+import { REPO_URL } from '../lib/config';
+
 export default function Nav() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-canvas border-b border-hairline h-16 flex items-center">
@@ -16,8 +18,8 @@ export default function Nav() {
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-lg">
           {[
-            { label: 'GITHUB', href: 'https://github.com/Prateek-N/Multi-Agent-Stack' },
-            { label: 'DOCS', href: 'https://github.com/Prateek-N/Multi-Agent-Stack#readme' },
+            { label: 'GITHUB', href: REPO_URL },
+            { label: 'DOCS', href: `${REPO_URL}#readme` },
             { label: 'QUICKSTART', href: '#quickstart' },
           ].map(({ label, href }) => (
             <a
@@ -40,7 +42,7 @@ export default function Nav() {
 
         {/* Mobile — GitHub icon only */}
         <a
-          href="https://github.com/Prateek-N/Multi-Agent-Stack"
+          href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="md:hidden text-body hover:text-ink transition-colors"

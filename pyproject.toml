@@ -9,7 +9,7 @@ description = "Multi-LLM multi-agent assistant kit — structured AI sessions fo
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Prateek Narvariya", email = "Prateek.Narvariya@silverspaceinc.com" }
+    { name = "Prateek Narvariya" }
 ]
 keywords = ["ai", "agents", "llm", "multi-agent", "prompt-engineering", "claude", "openai"]
 classifiers = [

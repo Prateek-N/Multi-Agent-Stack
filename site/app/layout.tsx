@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { SITE_URL } from '../lib/config';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://agents-maker.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: 'agents-maker — Multi-Agent AI for Any Project, Any Tool',
   description:
     'Drop it into your project. Auto-detect domain. Route to the right specialist agent. Always know what to do next. Works with Claude, Copilot, Cursor, and Antigravity.',

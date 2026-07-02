@@ -1,3 +1,5 @@
+import { REPO_URL } from '../lib/config';
+
 const TERMINAL_LINES = [
   { text: '$ python agents-maker/tools/generate_prompt.py "add rate limiting to auth service"', cls: 'text-body-strong' },
   { text: '', cls: '' },
@@ -110,7 +112,7 @@ export default function Hero() {
               Get Started
             </a>
             <a
-              href="https://github.com/Prateek-N/Multi-Agent-Stack"
+              href={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center border border-ink text-ink hover:bg-canvas-elevated transition-colors"

@@ -1,4 +1,4 @@
-const REPO = 'https://github.com/Prateek-N/Multi-Agent-Stack';
+import { REPO_URL as REPO } from '../lib/config';
 
 const cols = [
   {
