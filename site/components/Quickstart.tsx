@@ -1,3 +1,5 @@
+import { NPM_PACKAGE } from '../lib/config';
+
 export default function Quickstart() {
   return (
     <section id="quickstart" className="bg-canvas py-xxl px-xs border-t border-hairline">
@@ -43,16 +45,30 @@ export default function Quickstart() {
           <div className="tab-panels">
             <div className="panel-unix">
               <CodeBlock lines={[
-                { prompt: true, text: 'git clone https://github.com/Prateek-N/Multi-Agent-Stack.git agents-maker' },
+                { prompt: true, text: `npx ${NPM_PACKAGE} init` },
                 { prompt: true, text: 'bash agents-maker/quickstart.sh' },
               ]} />
             </div>
             <div className="panel-win" style={{ display: 'none' }}>
               <CodeBlock lines={[
-                { prompt: true, text: 'git clone https://github.com/Prateek-N/Multi-Agent-Stack.git agents-maker', ps: true },
+                { prompt: true, text: `npx ${NPM_PACKAGE} init`, ps: true },
                 { prompt: true, text: '.\\agents-maker\\quickstart.ps1', ps: true },
               ]} />
             </div>
+          </div>
+
+          {/* Global install */}
+          <div className="mt-xl">
+            <p
+              className="text-muted mb-sm"
+              style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
+            >
+              Or install globally — use across all your projects
+            </p>
+            <CodeBlock lines={[
+              { prompt: true, text: `npm install -g ${NPM_PACKAGE}` },
+              { prompt: true, text: 'agents-maker init' },
+            ]} />
           </div>
 
           {/* What it does */}

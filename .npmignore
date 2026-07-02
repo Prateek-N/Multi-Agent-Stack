@@ -1,0 +1,12 @@
+site/
+.github/
+node_modules/
+.next/
+out/
+system_prompt.md
+project_state.md
+config/project.yaml
+BACKTEST_REPORT.md
+*.log
+.env*
+pyproject.toml

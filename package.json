@@ -1,0 +1,46 @@
+{
+  "name": "@prateek_ai/agents-maker",
+  "version": "1.0.0",
+  "description": "Multi-LLM multi-agent assistant kit — structured AI sessions for any project, any LLM",
+  "bin": {
+    "agents-maker": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "agents/",
+    "skills/",
+    "config/agents.yaml",
+    "config/domain_profiles.yaml",
+    "config/token_policies.yaml",
+    "config/project.yaml.example",
+    "tools/",
+    "context_loaders/",
+    "token_optimization/",
+    "quickstart.sh",
+    "quickstart.ps1",
+    "requirements.txt"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "llm",
+    "multi-agent",
+    "prompt-engineering",
+    "claude",
+    "openai",
+    "cursor",
+    "copilot"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prateek-N/Multi-Agent-Stack.git"
+  },
+  "homepage": "https://github.com/Prateek-N/Multi-Agent-Stack#readme",
+  "bugs": {
+    "url": "https://github.com/Prateek-N/Multi-Agent-Stack/issues"
+  }
+}

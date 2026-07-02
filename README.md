@@ -4,9 +4,10 @@
 
 ### Multi-LLM · Multi-Agent · Any Project · Any AI Tool
 
-> **Clone once. Use forever.**
+> **One command. Any project. Any AI tool.**
 > Every AI session becomes structured, token-efficient, and decision-aware.
 
+[![npm](https://img.shields.io/npm/v/@prateek_ai/agents-maker?color=cb3837&logo=npm)](https://www.npmjs.com/package/@prateek_ai/agents-maker)
 [![Kit Integrity](https://github.com/Prateek-N/Multi-Agent-Stack/actions/workflows/validate.yml/badge.svg)](https://github.com/Prateek-N/Multi-Agent-Stack/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
@@ -47,18 +48,31 @@
 
 ## ⚡ Quickstart
 
-### 🪟 Windows
+Run this from your project root — no git clone, no repo URL to remember:
 
-```powershell
-git clone https://github.com/Prateek-N/Multi-Agent-Stack.git agents-maker
-.\agents-maker\quickstart.ps1
+```bash
+npx @prateek_ai/agents-maker init
 ```
+
+Then run the setup script (handles Python deps, validation, and generates `system_prompt.md`):
 
 ### 🍎 macOS / Linux / WSL
 
 ```bash
-git clone https://github.com/Prateek-N/Multi-Agent-Stack.git agents-maker
 bash agents-maker/quickstart.sh
+```
+
+### 🪟 Windows
+
+```powershell
+.\agents-maker\quickstart.ps1
+```
+
+### 🌍 Global install — use across all your projects
+
+```bash
+npm install -g @prateek_ai/agents-maker
+agents-maker init
 ```
 
 The quickstart script handles everything:
@@ -67,6 +81,8 @@ The quickstart script handles everything:
 3. 🔍 Validates all 12 kit integrity checks
 4. 🚀 Runs `init_project.py` to scan your project and generate `system_prompt.md`
 5. 📋 Prints all commands you need, ready to copy-paste
+
+> **Prefer git?** `git clone https://github.com/Prateek-N/Multi-Agent-Stack.git agents-maker` works too.
 
 ---
 
@@ -349,7 +365,11 @@ Skills fire automatically, but you can invoke any explicitly:
 ## 🛠️ Command Reference
 
 ```bash
-# 🚀 One-command setup
+# 📦 Install into your project
+npx @prateek_ai/agents-maker init                        # on-demand (no install needed)
+npm install -g @prateek_ai/agents-maker && agents-maker init  # global install
+
+# 🚀 One-command setup (after init)
 bash agents-maker/quickstart.sh                          # macOS / Linux / WSL
 .\agents-maker\quickstart.ps1                            # Windows PowerShell
 
@@ -544,8 +564,11 @@ agents-maker/
 ├── 📋 CHANGELOG.md                  ← version history
 ├── 🤝 CONTRIBUTING.md               ← contribution guide + standards
 ├── 📜 LICENSE                       ← MIT
-├── 🚀 quickstart.sh                 ← one-command setup (macOS / Linux / WSL)
-├── 🚀 quickstart.ps1                ← one-command setup (Windows PowerShell)
+├── 📦 package.json                  ← npm package (@prateek_ai/agents-maker)
+├── 🖥️  bin/
+│   └── cli.js                       ← npx entry point (agents-maker init)
+├── 🚀 quickstart.sh                 ← setup script (macOS / Linux / WSL)
+├── 🚀 quickstart.ps1                ← setup script (Windows PowerShell)
 ├── 🧠 system_prompt.md              ← paste into your AI tool once (all agents + skills)
 ├── 📝 PROMPT_TEMPLATE.md            ← fill in before every session (no Python needed)
 ├── ⚙️  .github/
