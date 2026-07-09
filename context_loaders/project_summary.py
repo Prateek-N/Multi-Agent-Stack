@@ -230,6 +230,9 @@ def find_entrypoints(root: Path) -> list[tuple[str, str]]:
 def find_test_dirs(root: Path) -> list[tuple[str, str]]:
     results = []
 
+    # Skip dependency/VCS/build dirs so large repos aren't traversed (matches find_services).
+    skip = ("__pycache__", ".git", "node_modules", ".venv", "venv", "env")
+
     def _scan(directory: Path, depth: int = 0) -> None:
         if depth > 3:
             return
@@ -238,6 +241,8 @@ def find_test_dirs(root: Path) -> list[tuple[str, str]]:
                 if not entry.is_dir():
                     continue
                 name_lower = entry.name.lower()
+                if any(p in name_lower for p in skip):
+                    continue
                 if any(p in name_lower for p in TEST_DIR_PATTERNS):
                     rel = str(entry.relative_to(root)).replace("\\", "/")
                     results.append((rel + "/", "test suite"))

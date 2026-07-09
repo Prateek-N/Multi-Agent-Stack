@@ -14,10 +14,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
-import tempfile
 from pathlib import Path
 
 __version__ = "1.0.0"
@@ -27,24 +25,20 @@ KIT_DIR = SCRIPT_DIR.parent                     # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
 
 try:
-    import yaml
+    from tools._core import atomic_write, load_yaml, py_invocation
+    from tools.routing import AGENT_ROLES, PHASE_AGENTS, PHASE_LABELS, phase_agents
 except ImportError:
-    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
+    from _core import atomic_write, load_yaml, py_invocation
+    from routing import AGENT_ROLES, PHASE_AGENTS, PHASE_LABELS, phase_agents
+
+# Backward-compatible aliases (generate_platform_configs imports these names).
+_PHASE_AGENTS = PHASE_AGENTS
+_PHASE_LABELS = PHASE_LABELS
+_AGENT_ROLES = AGENT_ROLES
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _load_yaml(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except Exception:
-        return {}
-
 
 def _parse_phase(state_text: str) -> str:
     m = re.search(r"##\s+Current Phase\s*\n+(\S+)", state_text)
@@ -53,65 +47,8 @@ def _parse_phase(state_text: str) -> str:
     return "task_framing"
 
 
-# Phase → domain → active agents mapping (derived from agents.yaml lifecycle)
-_PHASE_AGENTS: dict[str, dict[str, list[str]]] = {
-    "task_framing":     {"_all": ["orchestrator"]},
-    "requirements":     {"_all": ["orchestrator", "architect_agent"]},
-    "solution_design":  {
-        "_all":          ["architect_agent"],
-        "software":      ["architect_agent", "ui_agent"],
-        "product_design":["architect_agent", "ui_agent", "ux_agent"],
-        "marketing":     ["architect_agent", "ux_agent"],
-    },
-    "implementation":   {
-        "_all":          ["execution_agent"],
-        "software":      ["code_agent"],
-        "data_analytics":["code_agent"],
-    },
-    "review_refinement":{
-        "_all":          ["reviewer_agent"],
-        "software":      ["reviewer_agent", "code_agent"],
-        "product_design":["reviewer_agent", "ui_agent", "ux_agent"],
-        "marketing":     ["reviewer_agent", "ux_agent"],
-    },
-    "handoff":          {"_all": ["orchestrator", "execution_agent"]},
-}
-
-_PHASE_LABELS: dict[str, str] = {
-    "task_framing":     "Task Framing",
-    "requirements":     "Requirements",
-    "solution_design":  "Solution Design",
-    "implementation":   "Implementation",
-    "review_refinement":"Review & Refinement",
-    "handoff":          "Handoff",
-    # aliases accepted by generate_prompt.py
-    "framing":          "Task Framing",
-    "design":           "Solution Design",
-    "implement":        "Implementation",
-    "review":           "Review & Refinement",
-}
-
-_AGENT_ROLES: dict[str, str] = {
-    "orchestrator":       "routing",
-    "architect_agent":    "design",
-    "code_agent":         "implementation",
-    "execution_agent":    "execution",
-    "ui_agent":           "UI",
-    "ux_agent":           "UX",
-    "reviewer_agent":     "QA",
-    "compression_agent":  "compression",
-}
-
-
-def _py(kit_rel: str, tool: str) -> str:
-    """Return a shell-safe 'python ...' invocation. Quotes the full path when it contains spaces."""
-    path = f"{kit_rel}/tools/{tool}"
-    return f'python "{path}"' if " " in path else f"python {path}"
-
-
 def _active_agents(domain: str, phase: str) -> list[str]:
-    phase_map = _PHASE_AGENTS.get(phase, {"_all": ["orchestrator"]})
-    return phase_map.get(domain, phase_map["_all"])
+    return phase_agents(phase, domain)
 
 
 # ---------------------------------------------------------------------------
@@ -132,8 +69,8 @@ def build_claude_md(
     agent_list = ", ".join(
         f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents
     )
-    regen_cmd = _py(kit_rel_path, "generate_claude_md.py")
-    prompt_cmd = _py(kit_rel_path, "generate_prompt.py")
+    regen_cmd = py_invocation(kit_rel_path, "generate_claude_md.py")
+    prompt_cmd = py_invocation(kit_rel_path, "generate_prompt.py")
 
     return (
         f"# agents-maker — Project AI Config\n"
@@ -207,7 +144,7 @@ def main() -> None:
         sys.exit(1)
 
     # Load project config
-    project_cfg = _load_yaml(KIT_DIR / "config" / "project.yaml")
+    project_cfg = load_yaml(KIT_DIR / "config" / "project.yaml")
     if not project_cfg:
         print(
             "[WARN] config/project.yaml not found — run init_project.py first.",
@@ -250,10 +187,7 @@ def main() -> None:
         return
 
     out_path = project_root / "CLAUDE.md"
-    with tempfile.NamedTemporaryFile("w", dir=out_path.parent, delete=False, suffix=".tmp", encoding="utf-8") as f:
-        f.write(content)
-        tmp = f.name
-    os.replace(tmp, out_path)
+    atomic_write(out_path, content)
 
     print(f"\nWritten: {out_path}")
     print(f"  Domain : {domain}  (confidence: {confidence})")

@@ -25,7 +25,6 @@ Requires pyyaml (pip install pyyaml).
 
 from __future__ import annotations
 
-import hashlib
 import re
 import sys
 from pathlib import Path
@@ -33,6 +32,15 @@ from pathlib import Path
 __version__ = "1.0.0"
 
 ROOT = Path(__file__).parent.parent
+
+# Allow sibling imports (domain_utils, _core) whether run as a script or module.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    from tools._core import source_hash
+    from tools.domain_utils import score_domain
+except ImportError:
+    from _core import source_hash
+    from domain_utils import score_domain
 
 
 # ---------------------------------------------------------------------------
@@ -204,7 +212,8 @@ def check_output_styles(policy_cfg: dict) -> None:
         if isinstance(val, dict) and "output_style" in val:
             refs.add(val["output_style"])
 
-    lifecycle = policy_cfg.get("generic_project_lifecycle") or {}
+    # generic_project_lifecycle is nested under workflows: in token_policies.yaml.
+    lifecycle = (policy_cfg.get("workflows") or {}).get("generic_project_lifecycle") or {}
     for phase_key, phase_val in (lifecycle.get("phases") or {}).items():
         if isinstance(phase_val, dict) and "output_style" in phase_val:
             refs.add(phase_val["output_style"])
@@ -236,40 +245,15 @@ SCORING_TESTS = [
 ]
 
 
-def _score(message: str, domains: dict, settings: dict) -> tuple[str, str]:
-    msg_lower = message.lower()
-    scores: dict[str, float] = {}
-    for d, cfg in domains.items():
-        if d == "general":
-            continue
-        strong = cfg.get("detection_signals", {}).get("strong", [])
-        weak = cfg.get("detection_signals", {}).get("weak", [])
-        s = sum(1.0 for sig in strong if sig in msg_lower)
-        w = sum(0.4 for sig in weak if sig in msg_lower)
-        scores[d] = (s + w) / 3
-
-    ranked = sorted(scores.items(), key=lambda x: -x[1])
-    top_d, top_s = ranked[0] if ranked else ("general", 0.0)
-    sec_d, sec_s = ranked[1] if len(ranked) > 1 else ("general", 0.0)
-
-    conf_t = settings.get("confidence_threshold", 0.40)
-    amb_t = settings.get("ambiguity_threshold", 0.10)
-
-    if top_s < conf_t:
-        return "general", "low"
-    elif (top_s - sec_s) < amb_t:
-        return top_d, "medium"
-    else:
-        return top_d, "high"
-
-
 def check_domain_scoring(domain_cfg: dict) -> None:
+    # Uses the shared scorer (domain_utils.score_domain) — the same code the
+    # runtime tools use — so this check can never validate a stale copy.
     print("\n--- Domain Detection Scoring ---")
     domains = domain_cfg.get("domains") or {}
     settings = domain_cfg.get("settings") or {}
     passed = 0
     for exp_domain, exp_conf, msg in SCORING_TESTS:
-        got_domain, got_conf = _score(msg, domains, settings)
+        got_domain, got_conf = score_domain(msg, domains, settings)
         if got_domain == exp_domain and got_conf == exp_conf:
             passed += 1
         else:
@@ -417,18 +401,6 @@ def check_file_inventory() -> None:
 # Check 12 — system_prompt.md freshness
 # ---------------------------------------------------------------------------
 
-def _compute_source_hash(root: Path) -> str:
-    h = hashlib.sha256()
-    agent_files = sorted((root / "agents").glob("*.md")) if (root / "agents").is_dir() else []
-    skill_files = sorted((root / "skills").glob("*.md")) if (root / "skills").is_dir() else []
-    for path in agent_files + skill_files:
-        try:
-            h.update(path.read_bytes().replace(b"\r\n", b"\n"))
-        except (OSError, PermissionError):
-            pass
-    return h.hexdigest()[:16]
-
-
 def check_system_prompt_freshness() -> None:
     print("\n--- system_prompt.md Freshness ---")
     sp_path = ROOT / "system_prompt.md"
@@ -448,7 +420,7 @@ def check_system_prompt_freshness() -> None:
         return
 
     stored = m.group(1)
-    current = _compute_source_hash(ROOT)
+    current = source_hash(ROOT)
     if stored != current:
         fail(
             f"system_prompt.md is stale (stored hash {stored} != current {current}). "

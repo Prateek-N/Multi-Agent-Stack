@@ -24,9 +24,7 @@ from __future__ import annotations
 __version__ = "1.0.0"
 
 import argparse
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent   # agents-maker/tools/
@@ -34,12 +32,7 @@ KIT_DIR = SCRIPT_DIR.parent                    # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
 
 try:
-    import yaml as _yaml_probe  # noqa: F401 — ensures pyyaml is installed
-except ImportError:
-    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
-
-try:
+    from tools._core import atomic_write, load_yaml, py_invocation
     from tools.generate_claude_md import (
         _AGENT_ROLES,
         _PHASE_AGENTS,
@@ -48,6 +41,7 @@ try:
         build_claude_md,
     )
 except ImportError:
+    from _core import atomic_write, load_yaml, py_invocation
     from generate_claude_md import (
         _AGENT_ROLES,
         _PHASE_AGENTS,
@@ -55,11 +49,6 @@ except ImportError:
         _parse_phase,
         build_claude_md,
     )
-
-try:
-    from tools.domain_utils import _load_yaml
-except ImportError:
-    from domain_utils import _load_yaml
 
 PLATFORMS = ["claude", "copilot", "cursor", "antigravity"]
 
@@ -76,27 +65,11 @@ def _agent_list_str(agents: list[str]) -> str:
     return ", ".join(f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents)
 
 
-def _py(kit_rel: str, tool: str) -> str:
-    """Return a shell-safe 'python ...' invocation. Quotes the full path when it contains spaces."""
-    path = f"{kit_rel}/tools/{tool}"
-    return f'python "{path}"' if " " in path else f"python {path}"
-
-
 def _yaml_str(value: str) -> str:
     """Return a YAML-safe scalar: quoted if it contains spaces or YAML special characters."""
     if " " in value or any(c in value for c in ":{}[]#&*!|>'\"%@`"):
         return f'"{value}"'
     return value
-
-
-def _atomic_write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        "w", dir=path.parent, delete=False, suffix=".tmp", encoding="utf-8"
-    ) as f:
-        f.write(content)
-        tmp = f.name
-    os.replace(tmp, path)
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +87,7 @@ def build_copilot_md(
     stack_str = ", ".join(stack) if stack else "unknown"
     phase_label = _PHASE_LABELS.get(phase, phase)
     agents = _active_agents(domain, phase)
-    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
+    regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
 
     all_agents = [
         "orchestrator (routing — always active)",
@@ -173,7 +146,7 @@ def build_cursor_rules(
     stack_str = ", ".join(stack) if stack else "unknown"
     phase_label = _PHASE_LABELS.get(phase, phase)
     agents = _active_agents(domain, phase)
-    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
+    regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
 
     return (
         f"# agents-maker — Cursor Rules\n"
@@ -256,7 +229,7 @@ def build_agkit_yaml(
     phase: str,
     kit_rel_path: str,
 ) -> str:
-    regen_cmd = _py(kit_rel_path, "generate_platform_configs.py")
+    regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
     stack_list = stack if stack else ["unknown"]
 
     lines: list[str] = [
@@ -346,7 +319,7 @@ def generate_all(
     platforms: list[str],
     dry_run: bool,
 ) -> None:
-    project_cfg = _load_yaml(kit_dir / "config" / "project.yaml")
+    project_cfg = load_yaml(kit_dir / "config" / "project.yaml")
     if not project_cfg:
         print("[WARN] config/project.yaml not found — run init_project.py first.", file=sys.stderr)
 
@@ -397,7 +370,7 @@ def generate_all(
     for platform, (rel_path, content) in builders.items():
         out_path = project_root / rel_path
         try:
-            _atomic_write(out_path, content)
+            atomic_write(out_path, content)
             print(f"  [DONE] {rel_path}  ({platform})")
             written.append(rel_path)
         except OSError as e:

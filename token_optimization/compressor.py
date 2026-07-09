@@ -126,11 +126,13 @@ class RelevanceFilter:
     See token_optimization/relevance_filter.md for the full scoring model.
     """
 
+    # Weights sum to 1.0. (A prior "recency" weight was removed: it had no data
+    # source and was hardwired to 0.0, so it silently contributed nothing; its
+    # budget is folded into lexical_overlap, the primary textual signal.)
     weights = {
-        "lexical_overlap": 0.35,
+        "lexical_overlap": 0.45,
         "direct_reference": 0.30,
         "symbol_mention": 0.20,
-        "recency": 0.10,
         "structural_importance": 0.05,
     }
 
@@ -177,15 +179,10 @@ class RelevanceFilter:
         symbol = self._symbol_mention(content_lower, raw_query)
         structural = 1.0 if any(p in path_lower for p in self._structural_patterns) else 0.0
 
-        # recency: caller must set f.relevance_score > 0 before calling this method
-        # to use it as a recency hint; otherwise defaults to 0.
-        recency = 0.0
-
         return (
             self.weights["lexical_overlap"] * lexical
             + self.weights["direct_reference"] * direct
             + self.weights["symbol_mention"] * symbol
-            + self.weights["recency"] * recency
             + self.weights["structural_importance"] * structural
         )
 

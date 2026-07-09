@@ -21,10 +21,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
-import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -36,12 +34,6 @@ SCRIPT_DIR = Path(__file__).resolve().parent   # agents-maker/tools/
 KIT_DIR = SCRIPT_DIR.parent                    # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
 
-try:
-    import yaml
-except ImportError:
-    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
-
 __version__ = "1.0.0"
 
 MAX_PROBLEM_LENGTH = 5000
@@ -51,11 +43,13 @@ MAX_PROBLEM_LENGTH = 5000
 # ---------------------------------------------------------------------------
 
 try:
-    from tools.domain_utils import _load_yaml
+    from tools._core import atomic_write_yaml, load_yaml
     from tools.domain_utils import detect_domain as _du_detect
+    from tools.routing import active_agents
 except ImportError:
-    from domain_utils import _load_yaml
+    from _core import atomic_write_yaml, load_yaml
     from domain_utils import detect_domain as _du_detect
+    from routing import active_agents
 
 
 def detect_domain(problem: str) -> tuple[str, str, float]:
@@ -118,53 +112,14 @@ def infer_phase(state_path: Path) -> str:
 # Agent selection per phase × domain
 # ---------------------------------------------------------------------------
 
-PHASE_AGENTS: dict[str, list[str]] = {
-    "task_framing":      ["orchestrator"],
-    "requirements":      ["orchestrator", "architect_agent"],
-    "solution_design":   ["orchestrator", "architect_agent"],
-    "implementation":    ["orchestrator"],
-    "review_refinement": ["orchestrator", "reviewer_agent"],
-    "handoff":           ["orchestrator"],
-}
-
-IMPLEMENTATION_AGENT: dict[str, str] = {
-    "software":       "code_agent",
-    "data_analytics": "code_agent",
-    "content":        "execution_agent",
-    "research":       "execution_agent",
-    "product_design": "execution_agent",
-    "marketing":      "execution_agent",
-    "ops_process":    "execution_agent",
-    "general":        "execution_agent",
-}
-
-DESIGN_AGENTS: dict[str, list[str]] = {
-    "product_design": ["ui_agent", "ux_agent"],
-    "marketing":      ["ux_agent"],
-}
-
-
 def select_agents(phase: str, domain: str) -> list[str]:
-    agents = list(PHASE_AGENTS.get(phase, ["orchestrator"]))
-
-    if phase == "implementation":
-        impl_agent = IMPLEMENTATION_AGENT.get(domain, "execution_agent")
-        if impl_agent not in agents:
-            agents.append(impl_agent)
-        for extra in DESIGN_AGENTS.get(domain, []):
-            if extra not in agents:
-                agents.append(extra)
-
-    if phase == "solution_design":
-        for extra in DESIGN_AGENTS.get(domain, []):
-            if extra not in agents:
-                agents.append(extra)
-
-    return agents
+    # Routing is centralized in tools/routing.py (single source of truth) so the
+    # generated prompt, CLAUDE.md, and platform configs all agree.
+    return active_agents(phase, domain)
 
 
 def select_skills(agents: list[str]) -> list[str]:
-    agents_cfg = _load_yaml(KIT_DIR / "config" / "agents.yaml").get("agents", {})
+    agents_cfg = load_yaml(KIT_DIR / "config" / "agents.yaml").get("agents", {})
     seen: set[str] = set()
     skills: list[str] = []
     for agent in agents:
@@ -332,7 +287,7 @@ def main() -> None:
 
     # Load project config
     project_yaml_path = KIT_DIR / "config" / "project.yaml"
-    project_cfg = _load_yaml(project_yaml_path)
+    project_cfg = load_yaml(project_yaml_path)
     if not project_cfg:
         print(
             "[WARN] project.yaml not found or empty. Run init_project.py first for best results.",
@@ -447,12 +402,7 @@ def main() -> None:
         project_cfg["session_count"] = project_cfg.get("session_count", 0) + 1
         project_cfg["last_session"] = date.today().isoformat()
         try:
-            with tempfile.NamedTemporaryFile(
-                "w", dir=project_yaml_path.parent, delete=False, suffix=".tmp", encoding="utf-8"
-            ) as _f:
-                yaml.dump(project_cfg, _f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-                _tmp = _f.name
-            os.replace(_tmp, project_yaml_path)
+            atomic_write_yaml(project_yaml_path, project_cfg)
         except (OSError, PermissionError) as e:
             print(f"[WARN] Could not update session_count in project.yaml: {e}", file=sys.stderr)
 

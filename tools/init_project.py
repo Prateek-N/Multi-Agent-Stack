@@ -11,10 +11,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
-import os
 import sys
-import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -29,12 +26,6 @@ KIT_DIR = SCRIPT_DIR.parent                        # agents-maker/
 sys.path.insert(0, str(KIT_DIR))
 
 try:
-    import yaml
-except ImportError:
-    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
-
-try:
     from context_loaders.project_summary import build_summary
     from context_loaders.repo_tree import walk_tree
 except ImportError as e:
@@ -43,10 +34,10 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from tools.domain_utils import _load_yaml
+    from tools._core import atomic_write, atomic_write_yaml, load_yaml, source_hash
     from tools.domain_utils import detect_domain as _detect_domain
 except ImportError:
-    from domain_utils import _load_yaml
+    from _core import atomic_write, atomic_write_yaml, load_yaml, source_hash
     from domain_utils import detect_domain as _detect_domain
 
 
@@ -83,46 +74,6 @@ def _sanitize_yaml_str(value: str, field: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Source hash — lets validate_kit.py detect stale system_prompt.md
-# ---------------------------------------------------------------------------
-
-def _compute_source_hash(kit_dir: Path) -> str:
-    h = hashlib.sha256()
-    agent_files = sorted((kit_dir / "agents").glob("*.md")) if (kit_dir / "agents").is_dir() else []
-    skill_files = sorted((kit_dir / "skills").glob("*.md")) if (kit_dir / "skills").is_dir() else []
-    for path in agent_files + skill_files:
-        try:
-            h.update(path.read_bytes().replace(b"\r\n", b"\n"))
-        except (OSError, PermissionError):
-            pass
-    return h.hexdigest()[:16]
-
-
-# ---------------------------------------------------------------------------
-# Atomic write helpers (write to temp then os.replace — crash-safe)
-# ---------------------------------------------------------------------------
-
-def _atomic_write_text(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        "w", dir=path.parent, delete=False, suffix=".tmp", encoding="utf-8"
-    ) as f:
-        f.write(content)
-        tmp = f.name
-    os.replace(tmp, path)
-
-
-def _atomic_write_yaml(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        "w", dir=path.parent, delete=False, suffix=".tmp", encoding="utf-8"
-    ) as f:
-        yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-        tmp = f.name
-    os.replace(tmp, path)
-
-
-# ---------------------------------------------------------------------------
 # system_prompt.md builder
 # ---------------------------------------------------------------------------
 
@@ -139,10 +90,10 @@ def build_system_prompt(project_name: str, domain: str, stack: list[str]) -> str
         "compression_agent.md",
     ]
     skill_count = len(list((KIT_DIR / "skills").glob("*.md"))) if (KIT_DIR / "skills").exists() else 0
-    source_hash = _compute_source_hash(KIT_DIR)
+    src_hash = source_hash(KIT_DIR)
     version_header = (
         f"# agents-maker system_prompt.md\n"
-        f"# Version: 1.0 | Generated: {date.today().isoformat()} | Source hash: {source_hash}\n"
+        f"# Version: 1.0 | Generated: {date.today().isoformat()} | Source hash: {src_hash}\n"
         f"# Regenerate: python agents-maker/tools/init_project.py --update\n"
         f"# Contains: {len(agent_order)} agents + {skill_count} skills\n"
         f"#\n"
@@ -332,7 +283,7 @@ def main() -> None:
     project_yaml_path = config_dir / "project.yaml"
 
     # Preserve session_count if updating
-    existing_cfg = _load_yaml(project_yaml_path)
+    existing_cfg = load_yaml(project_yaml_path)
     session_count = existing_cfg.get("session_count", 0) if args.update else 0
     created_at = existing_cfg.get("created_at", date.today().isoformat()) if args.update else date.today().isoformat()
 
@@ -349,7 +300,7 @@ def main() -> None:
         "last_session": existing_cfg.get("last_session") if args.update else None,
     }
     try:
-        _atomic_write_yaml(project_yaml_path, project_cfg)
+        atomic_write_yaml(project_yaml_path, project_cfg)
     except OSError as e:
         print(f"[ERROR] Could not write project.yaml: {e}", file=sys.stderr)
         sys.exit(1)
@@ -359,7 +310,7 @@ def main() -> None:
     if not system_prompt_path.exists() or args.update:
         system_prompt_text = build_system_prompt(project_name, final_domain, stack)
         try:
-            _atomic_write_text(system_prompt_path, system_prompt_text)
+            atomic_write(system_prompt_path, system_prompt_text)
         except OSError as e:
             print(f"[ERROR] Could not write system_prompt.md: {e}", file=sys.stderr)
             sys.exit(1)
@@ -375,7 +326,7 @@ def main() -> None:
     state_path = KIT_DIR / "project_state.md"
     if not state_path.exists():
         try:
-            _atomic_write_text(state_path, STATE_TEMPLATE)
+            atomic_write(state_path, STATE_TEMPLATE)
             state_created = True
         except OSError as e:
             print(f"[ERROR] Could not write project_state.md: {e}", file=sys.stderr)
@@ -437,7 +388,7 @@ def main() -> None:
         )
         claude_md_path = project_root / "CLAUDE.md"
         try:
-            _atomic_write_text(claude_md_path, claude_md_content)
+            atomic_write(claude_md_path, claude_md_content)
             print(f"  [DONE] CLAUDE.md written to {claude_md_path}")
             print("         Claude Code will auto-load domain/phase/stack on every session.")
             print("         Commit CLAUDE.md to git — it is project config, not private state.")
