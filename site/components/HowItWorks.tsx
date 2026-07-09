@@ -1,3 +1,6 @@
+import { Reveal, Stagger } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
+
 const phases = [
   {
     number: '0',
@@ -47,25 +50,22 @@ export default function HowItWorks() {
   return (
     <section className="bg-canvas py-xxl px-xs">
       <div className="max-w-editorial mx-auto">
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          The Lifecycle
-        </p>
+        <Reveal>
+          <Eyebrow className="mb-sm">The Lifecycle</Eyebrow>
 
-        <h2
-          className="text-ink mb-xxl"
-          style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
-        >
-          Six phases.
-          <br />
-          Every domain.
-          <br />
-          Every task.
-        </h2>
+          <h2
+            className="text-ink mb-xxl"
+            style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
+          >
+            Six phases.
+            <br />
+            Every domain.
+            <br />
+            Every task.
+          </h2>
+        </Reveal>
 
-        <div className="space-y-0 border-l-2 border-hairline ml-sm md:ml-lg">
+        <Stagger className="space-y-0 border-l-2 border-hairline ml-sm md:ml-lg" step={90}>
           {phases.map((phase, i) => (
             <div
               key={phase.key}
@@ -106,15 +106,17 @@ export default function HowItWorks() {
               </div>
             </div>
           ))}
-        </div>
+        </Stagger>
 
-        <p
-          className="text-muted mt-xxl border-t border-hairline pt-md"
-          style={{ fontSize: '13px', lineHeight: 1.6 }}
-        >
-          Each phase ends with an approval gate — A/B/C options. The AI never proceeds without your sign-off.
-          Small tasks can merge phases automatically.
-        </p>
+        <Reveal>
+          <p
+            className="text-muted mt-xxl border-t border-hairline pt-md"
+            style={{ fontSize: '13px', lineHeight: 1.6 }}
+          >
+            Each phase ends with an approval gate — A/B/C options. The AI never proceeds without your sign-off.
+            Small tasks can merge phases automatically.
+          </p>
+        </Reveal>
       </div>
     </section>
   );

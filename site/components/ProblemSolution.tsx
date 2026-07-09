@@ -1,3 +1,6 @@
+import { Reveal } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
+
 const rows = [
   { without: 'Re-explain the project every session', with: 'project_state.md resumes automatically' },
   { without: 'AI gives generic boilerplate patterns', with: 'Specialist agent uses your actual stack' },
@@ -11,26 +14,23 @@ export default function ProblemSolution() {
   return (
     <section className="bg-canvas py-xxl px-xs">
       <div className="max-w-editorial mx-auto">
-        {/* Label */}
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          The Problem
-        </p>
+        <Reveal>
+          {/* Label */}
+          <Eyebrow className="mb-sm">The Problem</Eyebrow>
 
-        {/* Headline */}
-        <h2
-          className="text-ink mb-xxl"
-          style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '640px' }}
-        >
-          AI quality is bounded
-          <br />
-          by context quality.
-        </h2>
+          {/* Headline */}
+          <h2
+            className="text-ink mb-xxl"
+            style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '640px' }}
+          >
+            AI quality is bounded
+            <br />
+            by context quality.
+          </h2>
+        </Reveal>
 
         {/* Table */}
-        <div className="border border-hairline overflow-hidden">
+        <Reveal delay={80} className="border border-hairline overflow-hidden">
           {/* Header */}
           <div className="grid grid-cols-2 border-b border-hairline">
             <div
@@ -71,7 +71,7 @@ export default function ProblemSolution() {
               </div>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

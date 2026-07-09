@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
+/* Fonts are loaded via <link> (with preconnect) in app/layout.tsx — no duplicate @import here. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,6 +60,68 @@ body {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll-reveal — block-level entrance (fade + rise) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scroll-reveal — staggered grid/list cells */
+.reveal-cell {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.is-visible > .reveal-cell {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card hover lift — transform/opacity only, GPU-friendly */
+.lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+}
+
+/* Respect reduced-motion — disable all entrances, lift, and hero/terminal anim */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal,
+  .reveal-cell {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .lift:hover { transform: none; box-shadow: none; }
+  .terminal-line,
+  .hero-headline,
+  .hero-sub,
+  .hero-ctas {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* No-JS fallback — never leave reveal content invisible */
+.no-js .reveal,
+.no-js .reveal-cell {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* CSS-only tab toggle */

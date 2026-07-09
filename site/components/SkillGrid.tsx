@@ -1,3 +1,6 @@
+import { Reveal, Stagger } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
+
 const skills = [
   { key: 'analyze_repo',       label: 'Analyze Repo',       desc: 'Stack detection, entrypoints, service map' },
   { key: 'design_api',         label: 'Design API',         desc: 'REST, GraphQL, and RPC contract drafts' },
@@ -15,23 +18,20 @@ const skills = [
 
 export default function SkillGrid() {
   return (
-    <section className="bg-canvas-elevated py-xxl px-xs border-y border-hairline">
+    <section id="skills" className="scroll-mt-16 bg-canvas-elevated py-xxl px-xs border-y border-hairline">
       <div className="max-w-editorial mx-auto">
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          12 Reusable Skills
-        </p>
+        <Reveal>
+          <Eyebrow className="mb-sm">12 Reusable Skills</Eyebrow>
 
-        <h2
-          className="text-ink mb-xxl"
-          style={{ fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 500, lineHeight: 1.2, letterSpacing: '-0.36px', maxWidth: '480px' }}
-        >
-          Plug-in capabilities that activate when you need them.
-        </h2>
+          <h2
+            className="text-ink mb-xxl"
+            style={{ fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 500, lineHeight: 1.2, letterSpacing: '-0.36px', maxWidth: '480px' }}
+          >
+            Plug-in capabilities that activate when you need them.
+          </h2>
+        </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-hairline border border-hairline overflow-hidden">
+        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-hairline border border-hairline overflow-hidden" step={50}>
           {skills.map((skill) => (
             <div
               key={skill.key}
@@ -54,15 +54,17 @@ export default function SkillGrid() {
               </span>
             </div>
           ))}
-        </div>
+        </Stagger>
 
-        <p className="text-muted mt-md" style={{ fontSize: '13px', lineHeight: 1.6 }}>
-          Skills are plain Markdown files. Add your own by dropping a new .md into{' '}
-          <code className="font-mono text-ink bg-canvas px-xxs" style={{ fontSize: '12px' }}>
-            agents-maker/skills/
-          </code>
-          .
-        </p>
+        <Reveal>
+          <p className="text-muted mt-md" style={{ fontSize: '13px', lineHeight: 1.6 }}>
+            Skills are plain Markdown files. Add your own by dropping a new .md into{' '}
+            <code className="font-mono text-ink bg-canvas px-xxs" style={{ fontSize: '12px' }}>
+              agents-maker/skills/
+            </code>
+            .
+          </p>
+        </Reveal>
       </div>
     </section>
   );

@@ -27,8 +27,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="bg-canvas">
+    <html lang="en" className="bg-canvas no-js" suppressHydrationWarning>
       <head>
+        {/* Strip .no-js before paint so scroll-reveal is armed; content stays visible if JS is off. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.remove('no-js')",
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

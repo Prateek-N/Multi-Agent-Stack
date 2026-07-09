@@ -1,3 +1,6 @@
+import { Reveal, Stagger } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
+
 const agents = [
   {
     id: 'orchestrator',
@@ -59,25 +62,22 @@ const agents = [
 
 export default function AgentGrid() {
   return (
-    <section className="bg-canvas py-xxl px-xs border-t border-hairline">
+    <section id="agents" className="scroll-mt-16 bg-canvas py-xxl px-xs border-t border-hairline">
       <div className="max-w-editorial mx-auto">
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          8 Specialist Agents
-        </p>
+        <Reveal>
+          <Eyebrow className="mb-sm">8 Specialist Agents</Eyebrow>
 
-        <h2
-          className="text-ink mb-xxl"
-          style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
-        >
-          The right expert,
-          <br />
-          automatically.
-        </h2>
+          <h2
+            className="text-ink mb-xxl"
+            style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
+          >
+            The right expert,
+            <br />
+            automatically.
+          </h2>
+        </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-hairline border border-hairline overflow-hidden">
+        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-hairline border border-hairline overflow-hidden" step={60}>
           {agents.map((agent) => (
             <div
               key={agent.id}
@@ -120,13 +120,15 @@ export default function AgentGrid() {
               </p>
             </div>
           ))}
-        </div>
+        </Stagger>
 
-        <p className="text-muted mt-md" style={{ fontSize: '13px', lineHeight: 1.6 }}>
-          You never name an agent. The Orchestrator selects specialists automatically based on
-          domain and phase. All agent specs are plain Markdown — paste any one directly into
-          any AI tool.
-        </p>
+        <Reveal>
+          <p className="text-muted mt-md" style={{ fontSize: '13px', lineHeight: 1.6 }}>
+            You never name an agent. The Orchestrator selects specialists automatically based on
+            domain and phase. All agent specs are plain Markdown — paste any one directly into
+            any AI tool.
+          </p>
+        </Reveal>
       </div>
     </section>
   );

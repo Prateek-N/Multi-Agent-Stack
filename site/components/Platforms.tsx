@@ -1,3 +1,6 @@
+import { Reveal, Stagger } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
+
 const platforms = [
   {
     name: 'Claude Code',
@@ -49,31 +52,28 @@ const platforms = [
 
 export default function Platforms() {
   return (
-    <section className="bg-canvas py-xxl px-xs border-t border-hairline">
+    <section id="platforms" className="scroll-mt-16 bg-canvas py-xxl px-xs border-t border-hairline">
       <div className="max-w-editorial mx-auto">
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          Works Everywhere
-        </p>
+        <Reveal>
+          <Eyebrow className="mb-sm">Works Everywhere</Eyebrow>
 
-        <h2
-          className="text-ink mb-md"
-          style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '640px' }}
-        >
-          Wire into every AI platform
-          <br />
-          with one command.
-        </h2>
+          <h2
+            className="text-ink mb-md"
+            style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '640px' }}
+          >
+            Wire into every AI platform
+            <br />
+            with one command.
+          </h2>
 
-        <p className="text-body mb-xxl" style={{ fontSize: '14px', lineHeight: 1.7, maxWidth: '520px' }}>
-          agents-maker writes a native config file for each platform — committed to git,
-          auto-loaded on every session. No copy-paste required.
-        </p>
+          <p className="text-body mb-xxl" style={{ fontSize: '14px', lineHeight: 1.7, maxWidth: '520px' }}>
+            agents-maker writes a native config file for each platform — committed to git,
+            auto-loaded on every session. No copy-paste required.
+          </p>
+        </Reveal>
 
         {/* Platform cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-hairline border border-hairline mb-xxl overflow-hidden">
+        <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-px bg-hairline border border-hairline mb-xxl overflow-hidden">
           {platforms.map((p) => (
             <div
               key={p.name}
@@ -106,10 +106,10 @@ export default function Platforms() {
               </div>
             </div>
           ))}
-        </div>
+        </Stagger>
 
         {/* Single command */}
-        <div>
+        <Reveal>
           <p
             className="text-muted mb-sm"
             style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
@@ -126,7 +126,7 @@ export default function Platforms() {
           <p className="text-muted mt-xxs" style={{ fontSize: '12px' }}>
             Commit the generated files — they are project config, not private state.
           </p>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

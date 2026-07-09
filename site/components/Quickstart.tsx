@@ -1,22 +1,21 @@
 import { NPM_PACKAGE } from '../lib/config';
+import { Reveal } from './Reveal';
+import Eyebrow from './ui/Eyebrow';
 
 export default function Quickstart() {
   return (
-    <section id="quickstart" className="bg-canvas py-xxl px-xs border-t border-hairline">
+    <section id="quickstart" className="scroll-mt-16 bg-canvas py-xxl px-xs border-t border-hairline">
       <div className="max-w-editorial mx-auto">
-        <p
-          className="text-primary mb-sm"
-          style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}
-        >
-          Quickstart
-        </p>
+        <Reveal>
+          <Eyebrow className="mb-sm">Quickstart</Eyebrow>
 
-        <h2
-          className="text-ink mb-xxl"
-          style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
-        >
-          Up in 60 seconds.
-        </h2>
+          <h2
+            className="text-ink mb-xxl"
+            style={{ fontSize: 'clamp(26px, 4vw, 56px)', fontWeight: 500, lineHeight: 1.1, letterSpacing: '-1.12px', maxWidth: '560px' }}
+          >
+            Up in 60 seconds.
+          </h2>
+        </Reveal>
 
         {/* CSS-only tab toggle */}
         <div className="relative">

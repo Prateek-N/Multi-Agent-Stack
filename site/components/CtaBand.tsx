@@ -1,4 +1,5 @@
 import { REPO_URL } from '../lib/config';
+import { Reveal } from './Reveal';
 
 export default function CtaBand() {
   return (
@@ -6,7 +7,7 @@ export default function CtaBand() {
       className="py-xxl px-xs"
       style={{ backgroundColor: '#da291c' }}
     >
-      <div className="max-w-editorial mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-lg">
+      <Reveal className="max-w-editorial mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-lg">
         <div>
           <h2
             className="text-white mb-sm"
@@ -55,7 +56,7 @@ export default function CtaBand() {
             Get Started
           </a>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
