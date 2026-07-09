@@ -654,6 +654,21 @@ After any addition, run `python agents-maker/tools/validate_kit.py` to confirm i
 
 ---
 
+## 🤔 How It Compares
+
+agents-maker is a **structured prompting layer**, not an agent runtime. It's complementary to — not a replacement for — the tools you already use.
+
+| | agents-maker | Cursor `.cursorrules` / Claude Projects | LangGraph / CrewAI / Agents SDK |
+|---|---|---|---|
+| **What it is** | Portable Markdown+YAML that structures your *prompt* | Per-tool persistent instructions | Code frameworks that *execute* agents |
+| **Runs code / calls the LLM?** | No — you paste into any tool | No | Yes |
+| **Provider lock-in** | None (works with all) | Tied to that one tool | You wire the provider |
+| **Best at** | Repeatable, domain-routed, resumable *context* across any tool | Deep integration in one editor | Autonomous multi-step execution |
+
+**Use agents-maker when** you jump between AI tools and want one consistent, token-budgeted, resumable way to frame work — without building your own scaffolding or locking into a single vendor. **Reach for a real agent framework** when you need autonomous execution, tool-calling loops, or a running service.
+
+---
+
 ## 🏛️ Design Principles
 
 | Principle | What it means |

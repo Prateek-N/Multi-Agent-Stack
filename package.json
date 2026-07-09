@@ -1,6 +1,6 @@
 {
   "name": "@prateek_ai/agents-maker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Multi-LLM multi-agent assistant kit — structured AI sessions for any project, any LLM",
   "bin": {
     "agents-maker": "bin/cli.js"
@@ -16,6 +16,10 @@
     "tools/",
     "context_loaders/",
     "token_optimization/",
+    "platforms/",
+    "docs/",
+    "examples/",
+    "PROMPT_TEMPLATE.md",
     "quickstart.sh",
     "quickstart.ps1",
     "requirements.txt"

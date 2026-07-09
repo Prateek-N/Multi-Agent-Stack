@@ -72,7 +72,7 @@ export default function Hero() {
         />
 
         <div className="max-w-editorial mx-auto">
-          <p
+          <h1
             className="hero-headline text-ink mb-sm"
             style={{
               fontSize: 'clamp(32px, 6vw, 80px)',
@@ -85,7 +85,7 @@ export default function Hero() {
             <br />
             Any Project.{' '}
             <span className="text-primary">Any Tool.</span>
-          </p>
+          </h1>
 
           <p
             className="hero-sub text-body mb-lg"
