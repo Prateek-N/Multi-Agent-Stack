@@ -13,7 +13,7 @@ export default function CtaBand() {
             className="text-white mb-sm"
             style={{ fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 500, lineHeight: 1.2, letterSpacing: '-0.36px' }}
           >
-            Clone once. Use forever.
+            One command. Any project.
           </h2>
           <p className="text-white opacity-80" style={{ fontSize: '16px', lineHeight: 1.6, maxWidth: '480px' }}>
             Drop agents-maker into any project. Wire it into every AI platform

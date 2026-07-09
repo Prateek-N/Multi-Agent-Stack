@@ -20,7 +20,7 @@
 
 ---
 
-**agents-maker** is a multi-agent assistant kit you drop into any project. It acts as intelligent middleware between your problem statement and any AI tool — Claude, ChatGPT, Codex, or anything else. Instead of dumping raw context into a chat window, you give it your stack, constraints, and task — and it routes to the right specialists, enforces a token budget, and always tells you what to do next.
+**agents-maker** is a structured prompting kit — provider-neutral Markdown + YAML you drop into any project. It's not an agent runtime: nothing executes on its own. Instead it acts as intelligent middleware between your problem statement and any AI tool — Claude, ChatGPT, Codex, or anything else — turning a task into a structured, domain-routed, token-budgeted prompt (with specialist "agent" personas and a resumable session state) that you paste into the LLM. Instead of dumping raw context into a chat window, you give it your stack, constraints, and task — and it routes to the right specialists, enforces a token budget, and always tells you what to do next.
 
 > 💡 **The key insight**: AI quality is bounded by context quality. agents-maker teaches you exactly what context to give, structures it automatically, and makes every session resume-able without replaying history.
 
@@ -623,7 +623,7 @@ agents-maker/
 │   └── file_chunker.py              ← large-file token splitter
 ├── 💰 token_optimization/
 │   ├── output_styles.md             ← style usage guide (definitions in token_policies.yaml)
-│   └── compressor.py                ← token budget enforcement engine
+│   └── compressor.py                ← compression pipeline (reference impl; provider adapters are stubs)
 └── 📖 examples/
     └── generic_project_lifecycle.md  ← two full annotated lifecycle walkthroughs
 ```

@@ -29,8 +29,9 @@ if (command === 'init') {
 
   console.log('Initializing agents-maker...');
 
-  // Copy agent/skill/tool directories wholesale
-  ['agents', 'skills', 'tools', 'context_loaders', 'token_optimization'].forEach(dir => {
+  // Copy agent/skill/tool + docs directories wholesale
+  ['agents', 'skills', 'tools', 'context_loaders', 'token_optimization',
+   'platforms', 'docs', 'examples'].forEach(dir => {
     const src = path.join(kitRoot, dir);
     if (fs.existsSync(src)) copyDir(src, path.join(dest, dir));
   });
@@ -44,8 +45,9 @@ if (command === 'init') {
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(configDst, f));
   });
 
-  // Copy root scripts and requirements
-  ['quickstart.sh', 'quickstart.ps1', 'requirements.txt'].forEach(f => {
+  // Copy root scripts, requirements, and the paste-only docs (PROMPT_TEMPLATE
+  // powers the zero-Python workflow the README advertises).
+  ['quickstart.sh', 'quickstart.ps1', 'requirements.txt', 'PROMPT_TEMPLATE.md', 'README.md'].forEach(f => {
     const src = path.join(kitRoot, f);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, f));
   });
