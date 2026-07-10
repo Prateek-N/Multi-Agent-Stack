@@ -62,6 +62,30 @@ In both, the structured output opened by recognizing a self-contained task and
 delivering immediately (Direct Task Mode working), then layered on the domain's
 format and accountability/coverage that the naive answer omitted.
 
+### Round 3 — blind adversarial grade
+
+Both pairs were then graded by a **different, impartial judge model**
+(`claude-haiku-4-5`) with the two responses **anonymized A/B** (order fixed by a
+per-folder hash, so it's blind but reproducible). See each folder's `grade.md`
+and reproduce with `tools/grade_proof.py`.
+
+| Task | completeness | correctness | actionability | structure | total | winner |
+|---|---|---|---|---|---|---|
+| Redis runbook — naive | 4 | 4 | **5** | 4 | 17 | |
+| Redis runbook — **structured** | 5 | 5 | 4 | 5 | **19** | ✅ structured |
+| ISO parser — naive | 5 | 5 | 4 | 4 | 18 | |
+| ISO parser — **structured** | 5 | 5 | 5 | 5 | **20** | ✅ structured |
+
+Structured won both, and the win is **nuanced, not a blowout**: it leads on
+completeness / correctness / structure, while the naive runbook actually scored
+*higher on actionability* (it packed in more raw commands). The judge's stated
+reasons matched the kit's design intent — RACI/exception governance for ops,
+pytest + next-steps for software.
+
+(Judge caveat: same model *family* as the one that produced the outputs, so a
+mild self-preference bias can't be fully excluded; a cross-vendor judge would be
+stronger.)
+
 ### Honest verdict + caveats
 
 - **When run as designed (role-separated), the structuring adds real, visible
