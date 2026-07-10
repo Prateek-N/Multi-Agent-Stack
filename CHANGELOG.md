@@ -6,6 +6,25 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ---
 
+## [1.0.2] - 2026-07-10
+
+### Added
+- **Clone-and-invoke named agents.** `npx … init` now installs Claude Code subagents (`.claude/agents/*`) and slash commands (`.claude/commands/*`) into the project root, so you can invoke agents by name: `/brain`, `/planpro`, `/orchestrate`, `/architect`, `/code`, `/execute`, `/ui`, `/ux`, `/review`, `/compress`. Non-destructive (never overwrites your own `.claude/` files).
+- `agents/brain.md` — new brainstorming agent: explores the problem space, generates 3+ approaches with trade-offs, recommends one. Reuses `compare_approaches` + `suggest_next`.
+- `agents/planpro.md` — new planning agent: turns a goal into a short, specific, dependency-ordered, verifiable plan file. Reuses `analyze_repo` + `compare_approaches`.
+- `tools/generate_claude_agents.py` — generates the `.claude/` subagents + slash commands from the roster (frontmatter `name`/`description`/`tools`/`model`); ships a committed `claude/` template so `npx` (pure Node) installs without Python.
+- `tools/compare_prompts.py` — proof-of-value harness: runs a naive vs structured prompt through the same model (CLI runner or `--api` with role separation); writes side-by-side outputs to `examples/proof/`.
+- `tools/grade_proof.py` — blind adversarial grader: anonymized A/B, impartial judge model, scores completeness/correctness/actionability/structure.
+- `generate_prompt.py --system-only` — emit just the task-scoped system prompt for an API `system` field.
+
+### Changed
+- **Token cost.** `--full` / `--system-only` now inline only the detected domain's agents + skills (`routing.domain_agents`) instead of the whole kit — ~30k → ~18–26k tokens; `compare_prompts --api` marks the system prompt `cache_control: ephemeral`.
+- `generate_platform_configs.py` — new `claude_agents` step writes `.claude/`; `brain`/`planpro` added to the agkit metadata. `package.json` ships `claude/`.
+- `system_prompt.md` regenerated to include `brain` + `planpro`; `README` gains a "Clone & Invoke" section and the site lists 10 agents.
+- Test suite expanded to 65 checks (added generator tests); `validate_kit` remains 12/12.
+
+---
+
 ## [1.0.1] - 2026-07-09
 
 ### Added

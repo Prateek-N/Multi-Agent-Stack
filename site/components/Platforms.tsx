@@ -39,7 +39,7 @@ const platforms = [
   {
     name: 'Antigravity',
     file: '.agkit/agents.yaml',
-    description: 'Full agent pipeline config — all 8 agents and 12 skills registered with phase and domain wiring.',
+    description: 'Full agent pipeline config — all 10 agents and 12 skills registered with phase and domain wiring.',
     color: '#F59E0B',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">

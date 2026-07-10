@@ -3,9 +3,26 @@ import Eyebrow from './ui/Eyebrow';
 
 const agents = [
   {
+    id: 'brain',
+    name: 'Brain',
+    role: 'Brainstorming',
+    command: '/brain',
+    description: 'Brainstorm the whole project — 3+ genuinely different approaches with trade-offs, then one recommendation.',
+    alwaysActive: false,
+  },
+  {
+    id: 'planpro',
+    name: 'PlanPro',
+    role: 'Planning',
+    command: '/planpro',
+    description: 'Turn a goal into the best-possible plan: short, specific, dependency-ordered, and verifiable.',
+    alwaysActive: false,
+  },
+  {
     id: 'orchestrator',
     name: 'Orchestrator',
     role: 'Supervisor',
+    command: '/orchestrate',
     description: 'Entry point for every task. Detects domain, drives the 6-phase lifecycle, aggregates output. Always active.',
     alwaysActive: true,
   },
@@ -13,6 +30,7 @@ const agents = [
     id: 'architect_agent',
     name: 'Architect',
     role: 'System Design',
+    command: '/architect',
     description: 'System design, API contracts, research plans, campaign strategy, and process maps.',
     alwaysActive: false,
   },
@@ -20,6 +38,7 @@ const agents = [
     id: 'code_agent',
     name: 'Code Agent',
     role: 'Implementation',
+    command: '/code',
     description: 'Software implementation, refactoring, and test generation for software and data analytics domains.',
     alwaysActive: false,
   },
@@ -27,6 +46,7 @@ const agents = [
     id: 'execution_agent',
     name: 'Execution Agent',
     role: 'Non-Code Work',
+    command: '/execute',
     description: 'Documents, research sections, marketing copy, SOPs, and runbooks. Everything not code.',
     alwaysActive: false,
   },
@@ -34,6 +54,7 @@ const agents = [
     id: 'ui_agent',
     name: 'UI Agent',
     role: 'Presentation Layer',
+    command: '/ui',
     description: 'Component hierarchy, layout, design tokens, accessibility, and landing page architecture.',
     alwaysActive: false,
   },
@@ -41,6 +62,7 @@ const agents = [
     id: 'ux_agent',
     name: 'UX Agent',
     role: 'Experience Design',
+    command: '/ux',
     description: 'Flow critique, onboarding sequences, funnel analysis, and friction identification.',
     alwaysActive: false,
   },
@@ -48,6 +70,7 @@ const agents = [
     id: 'reviewer_agent',
     name: 'Reviewer Agent',
     role: 'Quality Assurance',
+    command: '/review',
     description: 'Severity-rated QA review for any domain: CRITICAL / HIGH / MEDIUM / LOW.',
     alwaysActive: false,
   },
@@ -55,6 +78,7 @@ const agents = [
     id: 'compression_agent',
     name: 'Compression Agent',
     role: 'Context Management',
+    command: '/compress',
     description: 'Token budget enforcement, context compression, and cross-session resumption without history replay.',
     alwaysActive: false,
   },
@@ -65,7 +89,7 @@ export default function AgentGrid() {
     <section id="agents" className="scroll-mt-16 bg-canvas py-xxl px-xs border-t border-hairline">
       <div className="max-w-editorial mx-auto">
         <Reveal>
-          <Eyebrow className="mb-sm">8 Specialist Agents</Eyebrow>
+          <Eyebrow className="mb-sm">10 Named Agents</Eyebrow>
 
           <h2
             className="text-ink mb-xxl"
@@ -73,7 +97,7 @@ export default function AgentGrid() {
           >
             The right expert,
             <br />
-            automatically.
+            on command.
           </h2>
         </Reveal>
 
@@ -92,22 +116,29 @@ export default function AgentGrid() {
                 >
                   {agent.name}
                 </h3>
-                {agent.alwaysActive && (
+                <span className="flex-shrink-0 flex items-center gap-xxs" style={{ marginTop: '2px' }}>
                   <span
-                    className="flex-shrink-0 bg-primary text-white px-xxs"
-                    style={{
-                      fontSize: '9px',
-                      fontWeight: 600,
-                      letterSpacing: '0.8px',
-                      textTransform: 'uppercase',
-                      padding: '2px 6px',
-                      borderRadius: '0px',
-                      marginTop: '2px',
-                    }}
+                    className="font-mono text-primary"
+                    style={{ fontSize: '12px', fontWeight: 500 }}
                   >
-                    Always on
+                    {agent.command}
                   </span>
-                )}
+                  {agent.alwaysActive && (
+                    <span
+                      className="bg-primary text-white"
+                      style={{
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        letterSpacing: '0.8px',
+                        textTransform: 'uppercase',
+                        padding: '2px 6px',
+                        borderRadius: '0px',
+                      }}
+                    >
+                      Always on
+                    </span>
+                  )}
+                </span>
               </div>
               <span
                 className="text-muted mb-sm block"
@@ -124,9 +155,11 @@ export default function AgentGrid() {
 
         <Reveal>
           <p className="text-muted mt-md" style={{ fontSize: '13px', lineHeight: 1.6 }}>
-            You never name an agent. The Orchestrator selects specialists automatically based on
-            domain and phase. All agent specs are plain Markdown — paste any one directly into
-            any AI tool.
+            Invoke any agent by name (<code className="font-mono text-ink" style={{ fontSize: '12px' }}>/brain</code>,
+            {' '}<code className="font-mono text-ink" style={{ fontSize: '12px' }}>/planpro</code>, …) after
+            {' '}<code className="font-mono text-ink" style={{ fontSize: '12px' }}>npx @prateek_ai/agents-maker init</code> installs
+            them into your <code className="font-mono text-ink" style={{ fontSize: '12px' }}>.claude/</code> — or let the
+            Orchestrator route automatically. All agent specs are plain Markdown, portable to any AI tool.
           </p>
         </Reveal>
       </div>

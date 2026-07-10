@@ -11,7 +11,7 @@
 [![Kit Integrity](https://github.com/Prateek-N/Multi-Agent-Stack/actions/workflows/validate.yml/badge.svg)](https://github.com/Prateek-N/Multi-Agent-Stack/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![Agents](https://img.shields.io/badge/Agents-8-purple)
+![Agents](https://img.shields.io/badge/Agents-10-purple)
 ![Skills](https://img.shields.io/badge/Skills-12-green)
 ![Domains](https://img.shields.io/badge/Domains-8-orange)
 ![Tests](https://img.shields.io/badge/Tests-60%2F60-brightgreen)
@@ -38,7 +38,7 @@
 | One-size-fits-all output style | 11 output styles matched to phase and task |
 
 - 🎯 **Domain is auto-detected** from your task — software, content, research, marketing, analytics, product design, ops
-- 🧠 **8 specialist agents** activate only when relevant — you never name an agent
+- 🧠 **10 named agents** — invoke any by name (`/brain`, `/planpro`, `/code`, …), or let the Orchestrator route automatically
 - 💰 **Token budget is enforced** — context is compressed to fit the right window per phase
 - 🗺️ **Next steps always surfaced** — 3 ranked options after every response
 - 🔄 **State persists across sessions** — resume long projects without replaying history
@@ -183,7 +183,7 @@ This writes a native config file for each platform — committed to git, auto-lo
 | 🟣 **Claude Code** | `CLAUDE.md` | Auto-read every session — domain, stack, phase, agent routing loaded silently |
 | 🟢 **GitHub Copilot** | `.github/copilot-instructions.md` | Workspace-level instructions — Copilot applies agent routing on every suggestion |
 | 🔵 **Cursor** | `.cursor/rules` | Persistent AI rules — Cursor applies domain context across all tabs |
-| ⚡ **Antigravity** | `.agkit/agents.yaml` | Full agent pipeline config — all 8 agents + 12 skills registered with phase/domain wiring |
+| ⚡ **Antigravity** | `.agkit/agents.yaml` | Full agent pipeline config — all 10 agents + 12 skills registered with phase/domain wiring |
 
 **Commit all generated files** — they are project config, not private state. Every developer who clones the repo gets the full multi-agent setup automatically.
 
@@ -437,20 +437,22 @@ python agents-maker/tools/test_kit.py
 
 ---
 
-## 🧠 The 8 Specialist Agents
+## 🧠 The 10 Agents
 
-> The Orchestrator routes your task automatically. You never call an agent by name.
+> Invoke any by name (`/brain`, `/planpro`, `/code`, …) — or let the Orchestrator route automatically.
 
-| Agent | 🎯 What it handles |
-|---|---|
-| 🎛️ **Orchestrator** | Entry point — detects domain, drives 6-phase lifecycle, aggregates output |
-| 🏗️ **Architect / Planner** | System design, API contracts, research plans, campaign strategy, process maps |
-| 💻 **Code Agent** | Software implementation, refactoring, test generation (software + analytics) |
-| ✍️ **Execution Agent** | Non-code work — documents, research sections, marketing copy, SOPs, runbooks |
-| 🖥️ **UI Agent** | Component hierarchy, layout, design tokens, accessibility, landing pages |
-| 🧭 **UX Agent** | Flow critique, onboarding sequences, funnel analysis, friction identification |
-| 🔍 **Reviewer Agent** | QA for any domain — severity-rated reviews, edge cases, brand alignment |
-| 🗜️ **Compression Agent** | Token budget enforcement, context compression, cross-session resumption |
+| Agent | Command | 🎯 What it handles |
+|---|---|---|
+| 🧠 **Brain** | `/brain` | Brainstorm the whole project — 3+ approaches, trade-offs, one recommendation |
+| 🗺️ **PlanPro** | `/planpro` | Best-possible plan — short, specific, dependency-ordered, verifiable |
+| 🎛️ **Orchestrator** | `/orchestrate` | Entry point — detects domain, drives 6-phase lifecycle, aggregates output |
+| 🏗️ **Architect / Planner** | `/architect` | System design, API contracts, research plans, campaign strategy, process maps |
+| 💻 **Code Agent** | `/code` | Software implementation, refactoring, test generation (software + analytics) |
+| ✍️ **Execution Agent** | `/execute` | Non-code work — documents, research sections, marketing copy, SOPs, runbooks |
+| 🖥️ **UI Agent** | `/ui` | Component hierarchy, layout, design tokens, accessibility, landing pages |
+| 🧭 **UX Agent** | `/ux` | Flow critique, onboarding sequences, funnel analysis, friction identification |
+| 🔍 **Reviewer Agent** | `/review` | QA for any domain — severity-rated reviews, edge cases, brand alignment |
+| 🗜️ **Compression Agent** | `/compress` | Token budget enforcement, context compression, cross-session resumption |
 
 ---
 

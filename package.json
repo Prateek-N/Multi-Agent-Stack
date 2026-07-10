@@ -1,6 +1,6 @@
 {
   "name": "@prateek_ai/agents-maker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Multi-LLM multi-agent assistant kit — structured AI sessions for any project, any LLM",
   "bin": {
     "agents-maker": "bin/cli.js"

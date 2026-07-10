@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 const stats = [
-  { number: 8, label: 'Specialist Agents' },
+  { number: 10, label: 'Named Agents' },
   { number: 12, label: 'Reusable Skills' },
   { number: 8, label: 'Auto-Detected Domains' },
   { number: 60, label: 'Tests Passing' },
