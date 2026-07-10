@@ -80,7 +80,9 @@ def run_anthropic(system: str | None, user: str, model: str, max_tokens: int = 3
         raise RuntimeError("ANTHROPIC_API_KEY is not set.")
     body: dict = {"model": model, "max_tokens": max_tokens, "messages": [{"role": "user", "content": user}]}
     if system:
-        body["system"] = system
+        # Mark the (large, stable) system prompt as cacheable: the first call writes
+        # the cache, later calls read it at ~0.1x input cost.
+        body["system"] = [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]
     req = urllib.request.Request(
         "https://api.anthropic.com/v1/messages",
         data=json.dumps(body).encode("utf-8"),
@@ -92,6 +94,14 @@ def run_anthropic(system: str | None, user: str, model: str, max_tokens: int = 3
             data = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         return f"[api error {e.code}] {e.read().decode('utf-8', 'replace')[:400]}"
+    u = data.get("usage", {})
+    print(
+        f"       [usage] input={u.get('input_tokens',0)} "
+        f"cache_write={u.get('cache_creation_input_tokens',0)} "
+        f"cache_read={u.get('cache_read_input_tokens',0)} "
+        f"output={u.get('output_tokens',0)}",
+        file=sys.stderr,
+    )
     return "".join(b.get("text", "") for b in data.get("content", [])).strip()
 
 
@@ -129,8 +139,14 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if args.api:
-        # Role-separated: system prompt in `system`, task+context as `user`.
-        system_prompt = (KIT_DIR / "system_prompt.md").read_text(encoding="utf-8")
+        # Role-separated: task-scoped system prompt in `system`, task+context as `user`.
+        sp = subprocess.run(
+            [sys.executable, str(SCRIPT_DIR / "generate_prompt.py"), args.task, "--system-only"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+        )
+        if sp.returncode != 0:
+            raise RuntimeError(f"generate_prompt --system-only failed: {sp.stderr[:300]}")
+        system_prompt = sp.stdout.strip()
         naive = args.task
         structured_user = build_structured_prompt(args.task, full=False)
         (out_dir / "naive_prompt.txt").write_text(naive + "\n", encoding="utf-8")

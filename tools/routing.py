@@ -83,3 +83,19 @@ def active_agents(phase: str, domain: str) -> list[str]:
         if a not in agents:
             agents.append(a)
     return agents
+
+
+def domain_agents(domain: str) -> list[str]:
+    """Every agent this domain uses across all phases (union), orchestrator first.
+
+    Used to scope a self-contained/Direct-Task-Mode system prompt: it must carry
+    the domain's implementation + review specialists (and their skills), not just
+    the phase-0 orchestrator — otherwise the skills that add value get dropped.
+    Still excludes agents from other domains, so it stays smaller than the full kit.
+    """
+    seen: list[str] = ["orchestrator"]
+    for phase in PHASE_AGENTS:
+        for a in active_agents(phase, domain):
+            if a not in seen:
+                seen.append(a)
+    return seen

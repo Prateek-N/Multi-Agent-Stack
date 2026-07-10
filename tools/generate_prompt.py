@@ -45,11 +45,11 @@ MAX_PROBLEM_LENGTH = 5000
 try:
     from tools._core import atomic_write_yaml, load_yaml
     from tools.domain_utils import detect_domain as _du_detect
-    from tools.routing import active_agents
+    from tools.routing import active_agents, domain_agents
 except ImportError:
     from _core import atomic_write_yaml, load_yaml
     from domain_utils import detect_domain as _du_detect
-    from routing import active_agents
+    from routing import active_agents, domain_agents
 
 
 def detect_domain(problem: str) -> tuple[str, str, float]:
@@ -155,6 +155,42 @@ def load_skill_md(skill_key: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Task-scoped system prompt (lazy-load: only the routed agents + skills)
+# ---------------------------------------------------------------------------
+
+COMPANION_DIRECTIVE = (
+    "# agents-maker — active kit (task-scoped)\n"
+    "You are operating under the agents-maker system below, loaded with only the "
+    "agents and skills routed for this task. The Orchestrator leads.\n"
+    "After every response append a [Companion] block:\n"
+    "  ---\n"
+    "  [Companion] Phase: <phase> | Domain: <domain> | Est. token budget used: ~N%\n"
+    "  What to do next (pick one):\n"
+    "  [Recommended] A: <action>  Command: python agents-maker/tools/generate_prompt.py \"...\"\n"
+    "  B: <action>\n"
+    "  C: <action>\n"
+    "  ---\n"
+    "In Direct Task Mode (a single self-contained task) deliver the finished artifact "
+    "first, then the [Companion] block — do not open the phase lifecycle."
+)
+
+
+def build_scoped_system(agents: list[str], skills: list[str]) -> str:
+    """Assemble a task-scoped system prompt: companion directive + only the routed
+    agent and skill specs. Far smaller than the full 8-agent / 12-skill system_prompt.md."""
+    parts: list[str] = [COMPANION_DIRECTIVE, "=" * 60]
+    for agent in agents:
+        parts.append(load_agent_md(agent))
+        parts.append("---")
+    for skill in skills:
+        content = load_skill_md(skill)
+        if content:
+            parts.append(content)
+            parts.append("---")
+    return "\n\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
 # Token estimation
 # ---------------------------------------------------------------------------
 
@@ -178,28 +214,16 @@ def build_prompt(
     project_cfg: dict,
     state_text: str,
     include_system: bool = False,
+    system_agents: list[str] | None = None,
+    system_skills: list[str] | None = None,
 ) -> str:
     parts: list[str] = []
 
     if include_system:
-        sys_path = KIT_DIR / "system_prompt.md"
-        if sys_path.exists():
-            try:
-                parts.append(sys_path.read_text(encoding="utf-8").strip())
-                parts.append("\n" + "=" * 60 + "\n")
-            except (OSError, PermissionError):
-                print("[WARN] Could not read system_prompt.md — inlining agents instead.", file=sys.stderr)
-                include_system = False
-
-        if not sys_path.exists() or not include_system:
-            for agent in agents:
-                parts.append(load_agent_md(agent))
-                parts.append("---")
-            for skill in skills:
-                content = load_skill_md(skill)
-                if content:
-                    parts.append(content)
-                    parts.append("---")
+        # Task-scoped: inline only the domain's routed agents + skills (not the full
+        # 8-agent / 12-skill system_prompt.md) to keep token cost low.
+        parts.append(build_scoped_system(system_agents or agents, system_skills or skills))
+        parts.append("\n" + "=" * 60 + "\n")
 
     project_name = project_cfg.get("project_name", "unknown")
     proj_domain = project_cfg.get("primary_domain", domain)
@@ -281,6 +305,11 @@ def main() -> None:
         action="store_true",
         help="Apply token policy for the detected phase/domain: appends output style instruction and reports token budget.",
     )
+    parser.add_argument(
+        "--system-only",
+        action="store_true",
+        help="Print only the task-scoped system prompt (routed agents + skills) and exit. Use as the `system` field of an API call.",
+    )
     args = parser.parse_args()
 
     # Validate problem statement
@@ -339,6 +368,19 @@ def main() -> None:
     agents = select_agents(phase, domain)
     skills = select_skills(agents)
 
+    # A self-contained system prompt (--full / --system-only) must carry the whole
+    # domain's specialists so Direct Task Mode can deliver — scope by domain, not phase.
+    if args.full or args.system_only:
+        sys_agents = domain_agents(domain)
+        sys_skills = select_skills(sys_agents)
+    else:
+        sys_agents, sys_skills = agents, skills
+
+    # --system-only: emit just the task-scoped system prompt (for the API `system` field).
+    if args.system_only:
+        print(build_scoped_system(sys_agents, sys_skills))
+        return
+
     prompt_text = build_prompt(
         problem=args.problem,
         domain=domain,
@@ -350,6 +392,8 @@ def main() -> None:
         project_cfg=project_cfg,
         state_text=state_text,
         include_system=args.full,
+        system_agents=sys_agents,
+        system_skills=sys_skills,
     )
 
     # Apply token policy when --compress is requested

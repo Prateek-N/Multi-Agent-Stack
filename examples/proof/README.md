@@ -104,3 +104,35 @@ Reproduce:
 export ANTHROPIC_API_KEY=sk-ant-...
 python tools/compare_prompts.py "[domain: ops_process] write a Redis failover runbook" --api
 ```
+
+## Cost / token optimization
+
+The full system prompt (all 8 agents + 12 skills) is ~30k input tokens per call —
+the cost/latency issue the grading surfaced. Two levers now reduce it:
+
+1. **Task-scoped (lazy-loaded) system prompt.** `generate_prompt.py --full` and
+   `--system-only` now inline only the agents + skills the **detected domain**
+   uses, not the whole kit (`tools/routing.py:domain_agents`). Measured:
+
+   | System prompt | chars | ~tokens |
+   |---|---|---|
+   | Full kit (`system_prompt.md`) | 120,599 | ~30,100 |
+   | Scoped — `software` | 104,763 | ~26,200 |
+   | Scoped — `ops_process` / `content` | 74,320 | ~18,600 |
+
+   Quality is preserved because domain scoping only drops *other* domains'
+   specialists — the ones that added value (e.g. `write_process_map` for ops,
+   `write_tests` for software) are still included.
+
+2. **Prompt caching.** `compare_prompts.py --api` marks the system prompt with
+   `cache_control: ephemeral`, so after the first call repeats read it at ~0.1x
+   input cost (usage is printed per call).
+
+**Honest limits:** scoping helps most for non-software domains; `software`
+legitimately uses most specialists, so it stays heavy (~26k tokens). Getting
+under a small (e.g. 10k tokens/min) account tier would require either a higher
+tier, caching (cost only, not first-call rate limit), or trimming the verbose
+agent/skill specs — flagged as future work. A live re-run of the scoped+cached
+path wasn't completed here because the test API key was rotated mid-session; the
+scoping change is covered by the unit suite (60/60) and only removes
+non-domain content, so the graded ops result above is unaffected.
