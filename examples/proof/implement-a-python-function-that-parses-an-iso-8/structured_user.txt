@@ -1,0 +1,35 @@
+## Project Context
+Name: agents-maker | Stack: Python, Node.js | Domain: software
+
+## Session State
+# Project State
+schema_version: "1.0"
+
+## Current Phase
+task_framing
+
+## Domain
+(detected at init — override here if needed)
+
+## Approved Artifacts
+(none yet)
+
+## Open Decisions
+(none yet)
+
+## Build Log
+(empty)
+
+## Session Notes
+(add notes after each session)
+
+## Task
+implement a Python function that parses an ISO-8601 duration string (e.g. PT1H30M) into total seconds, with unit tests
+
+Execute this task now. If it is self-contained, deliver the finished artifact immediately in Direct Task Mode — do not greet, do not restate this configuration, do not ask for project context, and do not open the phase lifecycle unless the task is clearly multi-phase. End with the [Companion] next-steps block.
+
+## Domain & Routing
+Domain: software (confidence: high, score: 0.67)
+Suggested phase: task_framing
+Active agents: orchestrator
+Active skills: analyze_repo, summarize_history, suggest_next, compare_approaches

@@ -221,7 +221,13 @@ def build_prompt(
         session_num = project_cfg.get("session_count", 0) + 1
         parts.append(f"## Session State\nSession {session_num} — starting fresh")
 
-    parts.append(f"## Task\n{problem}")
+    parts.append(
+        f"## Task\n{problem}\n\n"
+        "Execute this task now. If it is self-contained, deliver the finished artifact "
+        "immediately in Direct Task Mode — do not greet, do not restate this configuration, "
+        "do not ask for project context, and do not open the phase lifecycle unless the task "
+        "is clearly multi-phase. End with the [Companion] next-steps block."
+    )
 
     routing_lines = [
         "## Domain & Routing",

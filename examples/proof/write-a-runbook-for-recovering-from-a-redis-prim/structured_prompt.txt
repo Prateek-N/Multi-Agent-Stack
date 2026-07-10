@@ -2983,7 +2983,7 @@ Compression hint: request `test_type: unit` and `coverage_targets: happy_path_on
 
 ## Project Context
 
-Project name: agents-maker  
+Project name: repo checker  
 Primary domain: software  
-Stack: Python, Node.js  
-Initialized: 2026-07-09  
+Stack: unknown  
+Initialized: 2026-07-09
