@@ -1,21 +1,22 @@
 import { REPO_URL } from '../lib/config';
 
 const TERMINAL_LINES = [
-  { text: '$ python agents-maker/tools/generate_prompt.py "add rate limiting to auth service"', cls: 'text-body-strong' },
+  { text: '$ npx @prateek_ai/agents-maker init', cls: 'text-body-strong' },
+  { text: '✓ agents-maker/ ready  ·  .claude/ agents + commands installed', cls: 'text-ink' },
+  { text: '  10 agents:  /brain  /planpro  /architect  /code  /review  … +5', cls: 'text-muted' },
   { text: '', cls: '' },
+  { text: '$ claude', cls: 'text-body-strong' },
+  { text: '› /planpro add sliding-window rate limiting to the auth service', cls: 'text-ink' },
   { text: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', cls: 'text-hairline' },
-  { text: '  PASTE THIS AS YOUR NEXT MESSAGE', cls: 'text-primary font-semibold' },
-  { text: '  Project: my-app  |  Domain: software (high)  |  Phase: implementation', cls: 'text-muted' },
-  { text: '  Est. tokens: ~3,800  |  Agents: orchestrator, code_agent', cls: 'text-muted' },
+  { text: '  PLAN  ·  Domain: software (high, 1.33)  ·  reuses core/redis.py', cls: 'text-primary font-semibold' },
+  { text: '  1. RedisRateLimiter (ZSET)        → verify: unit tests pass', cls: 'text-ink' },
+  { text: '  2. FastAPI middleware (dep: 1)    → verify: 429 after N reqs', cls: 'text-ink' },
+  { text: '  3. X-RateLimit-* headers          → verify: curl -I shows them', cls: 'text-ink' },
+  { text: '  … 5 tasks, dependency-ordered, each independently verifiable', cls: 'text-muted-soft' },
   { text: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', cls: 'text-hairline' },
   { text: '', cls: '' },
-  { text: '## Project Context', cls: 'text-primary' },
-  { text: 'Name: my-app  |  Stack: python, fastapi, postgres  |  Domain: software', cls: 'text-ink' },
-  { text: '', cls: '' },
-  { text: '## Domain & Routing', cls: 'text-primary' },
-  { text: 'Domain: software (confidence: high, score: 1.33)', cls: 'text-ink' },
-  { text: 'Active agents: orchestrator, code_agent', cls: 'text-ink' },
-  { text: 'Active skills: review_code, write_tests, suggest_next', cls: 'text-muted-soft' },
+  { text: '[Companion]  next → /code to execute  ·  /review when done', cls: 'text-primary' },
+  { text: 'provider-neutral:  Claude · Copilot · Cursor · Antigravity', cls: 'text-muted' },
 ];
 
 export default function Hero() {
@@ -52,7 +53,7 @@ export default function Hero() {
                 </div>
               ))}
               {/* Cursor */}
-              <div className="terminal-line text-primary" style={{ animationDelay: '3.1s' }}>
+              <div className="terminal-line text-primary" style={{ animationDelay: '3.35s' }}>
                 <span
                   className="inline-block w-2 h-4 bg-primary"
                   style={{ animation: 'blink 1s step-end infinite', verticalAlign: 'text-bottom' }}
