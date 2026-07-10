@@ -19,6 +19,7 @@
     "platforms/",
     "docs/",
     "examples/",
+    "claude/",
     "PROMPT_TEMPLATE.md",
     "quickstart.sh",
     "quickstart.ps1",

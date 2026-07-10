@@ -345,6 +345,35 @@ check(60, "--full --compress -> contains both system prompt and Output Policy",
       ("Orchestrator" in out or "orchestrator" in out) and "## Output Policy" in out, "")
 
 # -------------------------------------------------------------
+# M. generate_claude_agents.py — subagents + slash commands
+# -------------------------------------------------------------
+section("M. generate_claude_agents.py — .claude/ subagents + commands")
+
+rc, out, err = run([PY, "tools/generate_claude_agents.py", "--template", "--dry-run"])
+check(61, "generate_claude_agents --dry-run exits 0", rc == 0, err[:200])
+check(62, "dry-run reports 20 files (10 agents + 10 commands)",
+      out.count("agents/") >= 10 and out.count("commands/") >= 10, out[:300])
+
+claude_agents_dir = ROOT / "claude" / "agents"
+claude_cmds_dir = ROOT / "claude" / "commands"
+agent_files = sorted(claude_agents_dir.glob("*.md")) if claude_agents_dir.is_dir() else []
+cmd_files = sorted(claude_cmds_dir.glob("*.md")) if claude_cmds_dir.is_dir() else []
+check(63, "committed claude/ templates: 10 agents + 10 commands",
+      len(agent_files) == 10 and len(cmd_files) == 10,
+      f"agents={len(agent_files)} commands={len(cmd_files)}")
+
+pp = claude_agents_dir / "planpro.md"
+pp_text = pp.read_text(encoding="utf-8") if pp.exists() else ""
+check(64, "subagent planpro.md has valid frontmatter (name/tools/model)",
+      "name: planpro" in pp_text and "tools:" in pp_text and "model: inherit" in pp_text,
+      pp_text[:200])
+
+brain_cmd = claude_cmds_dir / "brain.md"
+bc_text = brain_cmd.read_text(encoding="utf-8") if brain_cmd.exists() else ""
+check(65, "command brain.md has description + $ARGUMENTS",
+      "description:" in bc_text and "$ARGUMENTS" in bc_text, bc_text[:200])
+
+# -------------------------------------------------------------
 # Summary
 # -------------------------------------------------------------
 total = PASS_COUNT + FAIL_COUNT

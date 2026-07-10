@@ -67,6 +67,8 @@ AGENT_ROLES: dict[str, str] = {
     "ux_agent":          "UX",
     "reviewer_agent":    "QA",
     "compression_agent": "compression",
+    "brain":             "brainstorm",
+    "planpro":           "planning",
 }
 
 

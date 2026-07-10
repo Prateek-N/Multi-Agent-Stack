@@ -86,6 +86,33 @@ The quickstart script handles everything:
 
 ---
 
+## 🧠 Clone & Invoke — named agents in your project
+
+`npx @prateek_ai/agents-maker init` also installs **Claude Code subagents + slash commands**
+into your project's `.claude/` (non-destructively — it never overwrites your own files). Open
+the project in Claude Code and invoke any agent by name:
+
+```
+/brain      Brainstorm the whole project — 3+ approaches, trade-offs, one recommendation
+/planpro    Turn a goal into the best-possible plan (short, specific, dependency-ordered)
+/architect  System design, API contracts, data models, ADRs
+/code       Implement, refactor, and test (software + analytics)
+/execute    Non-code drafting — docs, research, marketing copy, SOPs
+/ui         Component hierarchy, layout, design tokens, accessibility
+/ux         Flow critique, onboarding, funnel/friction analysis
+/review     Severity-rated QA review (CRITICAL / HIGH / MEDIUM / LOW)
+/orchestrate  Route a complex task across specialists (6-phase lifecycle)
+/compress   Compress context / summarize session state
+```
+
+Typical flow: **`/brain`** to explore options → **`/planpro`** to lock a plan → **`/code`** to
+build → **`/review`** to check it. The main agent can also delegate to these as subagents.
+
+> Regenerate the `.claude/` files any time (e.g. after adding agents):
+> `python agents-maker/tools/generate_claude_agents.py`
+
+---
+
 ## 🚦 Two Ways to Use It
 
 ### 🅰️ Zero-Python Workflow (no installation needed)

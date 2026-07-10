@@ -55,8 +55,18 @@ if (command === 'init') {
   // Make shell script executable on Unix
   try { fs.chmodSync(path.join(dest, 'quickstart.sh'), 0o755); } catch (_) {}
 
+  // Install Claude Code subagents + slash commands into the project-root .claude/
+  // so `/brain`, `/planpro`, `/code`, … are usable immediately. Non-destructive:
+  // never overwrite a file the user already has.
+  const commands = installClaude(path.join(kitRoot, 'claude'), path.join(process.cwd(), '.claude'));
+
   console.log('');
   console.log('✓ agents-maker/ ready');
+  if (commands.length) {
+    console.log('✓ .claude/ agents + commands installed');
+    console.log('');
+    console.log('  Slash commands: ' + commands.map(c => '/' + c).join('  '));
+  }
   console.log('');
   console.log('Next — run from your project root:');
   console.log('  macOS / Linux / WSL:  bash agents-maker/quickstart.sh');
@@ -78,4 +88,28 @@ function copyDir(src, dst) {
     if (fs.statSync(s).isDirectory()) copyDir(s, d);
     else fs.copyFileSync(s, d);
   }
+}
+
+// Merge claude/{agents,commands}/*.md into <project>/.claude/, skipping any file
+// that already exists (so we never clobber the user's own agents/commands).
+// Returns the list of command names now available.
+function installClaude(templateRoot, claudeRoot) {
+  if (!fs.existsSync(templateRoot)) return [];
+  const commands = [];
+  for (const sub of ['agents', 'commands']) {
+    const srcDir = path.join(templateRoot, sub);
+    if (!fs.existsSync(srcDir)) continue;
+    const dstDir = path.join(claudeRoot, sub);
+    fs.mkdirSync(dstDir, { recursive: true });
+    for (const entry of fs.readdirSync(srcDir)) {
+      const dstFile = path.join(dstDir, entry);
+      if (fs.existsSync(dstFile)) {
+        console.log(`  (kept existing .claude/${sub}/${entry})`);
+        continue;
+      }
+      fs.copyFileSync(path.join(srcDir, entry), dstFile);
+      if (sub === 'commands' && entry.endsWith('.md')) commands.push(entry.replace(/\.md$/, ''));
+    }
+  }
+  return commands;
 }

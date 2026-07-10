@@ -81,6 +81,8 @@ def build_system_prompt(project_name: str, domain: str, stack: list[str]) -> str
     agents_dir = KIT_DIR / "agents"
     agent_order = [
         "orchestrator.md",
+        "brain.md",
+        "planpro.md",
         "architect_agent.md",
         "code_agent.md",
         "execution_agent.md",

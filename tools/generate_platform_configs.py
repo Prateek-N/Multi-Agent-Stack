@@ -50,7 +50,7 @@ except ImportError:
         build_claude_md,
     )
 
-PLATFORMS = ["claude", "copilot", "cursor", "antigravity"]
+PLATFORMS = ["claude", "claude_agents", "copilot", "cursor", "antigravity"]
 
 # ---------------------------------------------------------------------------
 # Helpers shared across builders
@@ -192,6 +192,8 @@ _AGENT_DESCRIPTIONS: dict[str, str] = {
     "ux_agent":          "Flow critique, onboarding sequences, funnel analysis, friction ID",
     "reviewer_agent":    "Severity-rated QA review for any domain (CRITICAL/HIGH/MEDIUM/LOW)",
     "compression_agent": "Token budget enforcement, context compression, cross-session resumption",
+    "brain":             "Project brainstorming — 3+ approaches with trade-offs + a recommendation",
+    "planpro":           "Implementation planning — short, specific, dependency-ordered plan file",
 }
 
 _AGENT_PHASES: dict[str, list[str]] = {
@@ -203,6 +205,8 @@ _AGENT_PHASES: dict[str, list[str]] = {
     "ux_agent":          ["solution_design", "review_refinement"],
     "reviewer_agent":    ["review_refinement"],
     "compression_agent": ["handoff"],
+    "brain":             ["task_framing", "solution_design"],
+    "planpro":           ["task_framing", "requirements", "solution_design"],
 }
 
 _AGENT_DOMAINS: dict[str, list[str]] = {
@@ -214,10 +218,12 @@ _AGENT_DOMAINS: dict[str, list[str]] = {
     "ux_agent":          ["product_design", "marketing"],
     "reviewer_agent":    ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
     "compression_agent": ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
+    "brain":             ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
+    "planpro":           ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
 }
 
 _AGENT_ORDER = [
-    "orchestrator", "architect_agent", "code_agent", "execution_agent",
+    "orchestrator", "brain", "planpro", "architect_agent", "code_agent", "execution_agent",
     "ui_agent", "ux_agent", "reviewer_agent", "compression_agent",
 ]
 
@@ -356,6 +362,17 @@ def generate_all(
     if "antigravity" in platforms:
         content = build_agkit_yaml(project_name, domain, stack, phase, kit_rel_path)
         builders["antigravity"] = (_PLATFORM_PATHS["antigravity"], content)
+
+    # Claude Code subagents + slash commands (.claude/agents, .claude/commands).
+    if "claude_agents" in platforms:
+        try:
+            from tools.generate_claude_agents import generate as _gen_claude
+        except ImportError:
+            from generate_claude_agents import generate as _gen_claude
+        cw, cs = _gen_claude(project_root / ".claude", kit_dir, force=False, dry_run=dry_run)
+        tag = "[dry-run] would write" if dry_run else "  [DONE]"
+        print(f"{tag} {len(cw)} .claude/ file(s) — subagents + slash commands"
+              + (f"; kept {len(cs)} existing" if cs else ""))
 
     if dry_run:
         for platform, (rel_path, content) in builders.items():

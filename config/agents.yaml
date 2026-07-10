@@ -284,6 +284,62 @@ agents:
     cost_tier: low
     default_output_style: concise_bullets
 
+  brain:
+    name: brain
+    description: >
+      Project brainstorming and decision support. Explores the problem space,
+      generates 3+ genuinely different approaches with trade-offs, and recommends
+      one. Invoked directly (/brain); pairs with planpro. Reads the repo to ground ideas.
+    skills:
+      - compare_approaches
+      - suggest_next
+    routing_tags:
+      - brainstorm
+      - ideate
+      - options
+      - trade-off
+      - approach
+      - decide
+      - explore
+      - alternatives
+    roles:
+      - brainstorm
+      - decision_support
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: summarized
+    cost_tier: low
+    default_output_style: concise_bullets
+
+  planpro:
+    name: planpro
+    description: >
+      Implementation planning. Turns a goal (or a /brain-chosen direction) into a
+      short, specific, dependency-ordered, verifiable plan file. Invoked directly
+      (/planpro); reads the repo to reuse existing code. Plans, never implements.
+    skills:
+      - analyze_repo
+      - compare_approaches
+      - suggest_next
+    routing_tags:
+      - plan
+      - roadmap
+      - breakdown
+      - task list
+      - steps
+      - milestones
+      - implementation plan
+    roles:
+      - planner
+      - decomposition
+    domains:
+      primary: [software, content, research, data_analytics, product_design, marketing, ops_process]
+      secondary: []
+    context_requirement: summarized
+    cost_tier: medium
+    default_output_style: solution_design
+
 # ---------------------------------------------------------------------------
 # Routing priority (ad-hoc workflows — when multiple tags match)
 #
