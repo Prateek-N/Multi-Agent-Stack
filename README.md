@@ -108,6 +108,18 @@ the project in Claude Code and invoke any agent by name:
 Typical flow: **`/brain`** to explore options → **`/planpro`** to lock a plan → **`/code`** to
 build → **`/review`** to check it. The main agent can also delegate to these as subagents.
 
+### ⚠️ What the agents can do — stay in control
+
+The installed agents run with **full tool access** — `Read, Grep, Glob, Edit, Write, Bash` —
+so build agents like `/code` and `/execute` **can modify files and run shell commands** in your
+project. Claude Code still asks for your approval on each tool use; treat that as real:
+
+- **Work on a branch** and keep everything under **git** — so any change is easy to review and undo.
+- **Review diffs** before accepting; don't blind-approve Bash you don't understand.
+- `/brain`, `/planpro`, and `/review` are advisory by nature (they read and recommend).
+- **Want stricter defaults?** These are plain files you own — edit the `tools:` line in
+  `.claude/agents/<name>.md` (e.g. remove `Bash`/`Edit`/`Write`) to make any agent read-only.
+
 > Regenerate the `.claude/` files any time (e.g. after adding agents):
 > `python agents-maker/tools/generate_claude_agents.py`
 
