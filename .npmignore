@@ -10,3 +10,9 @@ BACKTEST_REPORT.md
 *.log
 .env*
 pyproject.toml
+
+# Compiled Python bytecode (never ship — platform/version-specific)
+__pycache__/
+**/__pycache__/**
+*.pyc
+**/*.pyc

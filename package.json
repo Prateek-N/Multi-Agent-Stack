@@ -5,6 +5,9 @@
   "bin": {
     "agents-maker": "bin/cli.js"
   },
+  "scripts": {
+    "prepack": "node -e \"const fs=require('fs'),p=require('path');const skip=['node_modules','.git','.next','out','site'];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){if(skip.includes(e.name))continue;const f=p.join(d,e.name);if(e.isDirectory()){e.name==='__pycache__'?fs.rmSync(f,{recursive:true,force:true}):walk(f);}}};walk('.')\""
+  },
   "files": [
     "bin/",
     "agents/",
