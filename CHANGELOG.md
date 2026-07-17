@@ -6,6 +6,28 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ---
 
+## [1.0.3] - 2026-07-13
+
+### Added
+- **`/commands` now work in every tool's chat box.** `npx … init` installs native command
+  files into each tool's own folder — Antigravity `.agent/workflows/`, Claude Code
+  `.claude/{commands,agents}`, Cursor `.cursor/commands/`, Copilot `.github/prompts/`. Every
+  file is self-contained (embeds the full agent spec), so commands keep working even when the
+  kit folder is gitignored.
+- **`init` now gitignores the kit.** `agents-maker/` is appended to the project's `.gitignore`
+  (idempotent; created if missing) so the bulky helper stays out of your commits while the small
+  command files remain.
+- `tools/generate_agents.py` — generates the per-tool command files (replaces the Claude-only
+  `generate_claude_agents.py`); committed templates live under `dist/`.
+
+### Changed
+- `generate_platform_configs.py`: the `claude_agents` step became `agents` (regenerates all four
+  tool command folders); the Antigravity output is now native `.agent/rules/agents-maker.md`
+  (the bespoke `.agkit/agents.yaml` — which Antigravity never parsed — was removed).
+- README "Clone & Invoke" rewritten around the multi-tool flow; test suite covers all four tools.
+
+---
+
 ## [1.0.2] - 2026-07-10
 
 ### Added
