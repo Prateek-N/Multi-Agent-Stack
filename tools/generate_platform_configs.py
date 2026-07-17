@@ -12,11 +12,14 @@ Usage:
     python agents-maker/tools/generate_platform_configs.py --dry-run
     python agents-maker/tools/generate_platform_configs.py --path /your/project
 
-Generated files:
+Generated files (always-on "rules" layer):
     CLAUDE.md                           Claude Code (auto-read every session)
     .github/copilot-instructions.md     GitHub Copilot (workspace instructions)
     .cursor/rules                       Cursor (persistent AI rules)
-    .agkit/agents.yaml                  Antigravity agkit (agent pipeline config)
+    .agent/rules/agents-maker.md        Antigravity (native always-on rules)
+
+Native slash-command /commands (the "agents" step) are written to each tool's
+command folder by tools/generate_agents.py — see that file.
 """
 
 from __future__ import annotations
@@ -50,7 +53,7 @@ except ImportError:
         build_claude_md,
     )
 
-PLATFORMS = ["claude", "claude_agents", "copilot", "cursor", "antigravity"]
+PLATFORMS = ["claude", "agents", "copilot", "cursor", "antigravity"]
 
 # ---------------------------------------------------------------------------
 # Helpers shared across builders
@@ -180,131 +183,11 @@ def build_cursor_rules(
 
 
 # ---------------------------------------------------------------------------
-# Builder: Antigravity — .agkit/agents.yaml
+# Builder: Antigravity — native always-on rules at .agent/rules/agents-maker.md
+# (Slash commands for Antigravity are emitted separately to .agent/workflows/ by
+#  tools/generate_agents.py. The previous bespoke .agkit/agents.yaml was dropped —
+#  Antigravity does not parse it.)
 # ---------------------------------------------------------------------------
-
-_AGENT_DESCRIPTIONS: dict[str, str] = {
-    "orchestrator":      "Phase driver — detects domain, routes tasks, drives 6-phase lifecycle",
-    "architect_agent":   "System design, API contracts, solution architecture, research plans",
-    "code_agent":        "Software + analytics implementation, refactoring, test generation",
-    "execution_agent":   "Non-code output — docs, research, marketing copy, SOPs, runbooks",
-    "ui_agent":          "Component hierarchy, layout, design tokens, accessibility",
-    "ux_agent":          "Flow critique, onboarding sequences, funnel analysis, friction ID",
-    "reviewer_agent":    "Severity-rated QA review for any domain (CRITICAL/HIGH/MEDIUM/LOW)",
-    "compression_agent": "Token budget enforcement, context compression, cross-session resumption",
-    "brain":             "Project brainstorming — 3+ approaches with trade-offs + a recommendation",
-    "planpro":           "Implementation planning — short, specific, dependency-ordered plan file",
-}
-
-_AGENT_PHASES: dict[str, list[str]] = {
-    "orchestrator":      ["task_framing", "requirements", "solution_design", "implementation", "review_refinement", "handoff"],
-    "architect_agent":   ["requirements", "solution_design"],
-    "code_agent":        ["implementation", "review_refinement"],
-    "execution_agent":   ["implementation"],
-    "ui_agent":          ["solution_design", "review_refinement"],
-    "ux_agent":          ["solution_design", "review_refinement"],
-    "reviewer_agent":    ["review_refinement"],
-    "compression_agent": ["handoff"],
-    "brain":             ["task_framing", "solution_design"],
-    "planpro":           ["task_framing", "requirements", "solution_design"],
-}
-
-_AGENT_DOMAINS: dict[str, list[str]] = {
-    "orchestrator":      ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-    "architect_agent":   ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-    "code_agent":        ["software", "data_analytics"],
-    "execution_agent":   ["content", "research", "marketing", "ops_process", "product_design", "general"],
-    "ui_agent":          ["product_design", "software"],
-    "ux_agent":          ["product_design", "marketing"],
-    "reviewer_agent":    ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-    "compression_agent": ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-    "brain":             ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-    "planpro":           ["software", "content", "research", "data_analytics", "product_design", "marketing", "ops_process", "general"],
-}
-
-_AGENT_ORDER = [
-    "orchestrator", "brain", "planpro", "architect_agent", "code_agent", "execution_agent",
-    "ui_agent", "ux_agent", "reviewer_agent", "compression_agent",
-]
-
-
-def build_agkit_yaml(
-    project_name: str,
-    domain: str,
-    stack: list[str],
-    phase: str,
-    kit_rel_path: str,
-) -> str:
-    regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
-    stack_list = stack if stack else ["unknown"]
-
-    lines: list[str] = [
-        "# agents-maker — Antigravity agkit config",
-        f"# Auto-generated: {regen_cmd}",
-        "# Regenerate after domain/phase changes.",
-        f"# See {kit_rel_path}/platforms/antigravity.md for integration guide.",
-        "",
-        "kit_version: \"1.0\"",
-        "",
-        "project:",
-        f"  name: {project_name}",
-        f"  domain: {domain}",
-        f"  stack: [{', '.join(stack_list)}]",
-        f"  phase: {phase}",
-        "",
-        "agents:",
-    ]
-
-    for agent_id in _AGENT_ORDER:
-        desc = _AGENT_DESCRIPTIONS.get(agent_id, agent_id)
-        phases = _AGENT_PHASES.get(agent_id, [])
-        domains = _AGENT_DOMAINS.get(agent_id, [])
-        always = agent_id == "orchestrator"
-
-        lines.append(f"  {agent_id}:")
-        lines.append(f"    role: {_AGENT_ROLES.get(agent_id, 'specialist')}")
-        lines.append(f"    description: \"{desc}\"")
-        lines.append(f"    system_prompt_file: {_yaml_str(kit_rel_path + '/agents/' + agent_id + '.md')}")
-        if always:
-            lines.append("    always_active: true")
-        else:
-            lines.append(f"    active_phases: [{', '.join(phases)}]")
-            lines.append(f"    active_domains: [{', '.join(domains)}]")
-        lines.append("")
-
-    lines += [
-        "context:",
-        "  inject_globally:",
-        f"    - {_yaml_str(kit_rel_path + '/config/agents.yaml')}",
-        f"    - {_yaml_str(kit_rel_path + '/config/domain_profiles.yaml')}",
-        f"    - {_yaml_str(kit_rel_path + '/config/token_policies.yaml')}",
-        "  inject_per_session:",
-        f"    - {_yaml_str(kit_rel_path + '/project_state.md')}",
-        "",
-        "skills:",
-    ]
-
-    skills = [
-        ("analyze_repo",      "Any session starting with a code repo"),
-        ("design_api",        "API design, schema, contract decisions"),
-        ("review_code",       "Code review, QA, security audit"),
-        ("review_layout",     "UI/UX critique, layout and accessibility"),
-        ("improve_copy",      "Writing quality, tone, clarity"),
-        ("write_tests",       "Test generation, coverage, edge cases"),
-        ("summarize_history", "Cross-session compression and handoff"),
-        ("suggest_next",      "Auto-fires after every deliverable"),
-        ("compare_approaches","Structured decision table for trade-offs"),
-        ("animated_website",  "CSS/GSAP/Framer Motion animation code"),
-        ("write_process_map", "SOP/runbook: steps + RACI + exceptions"),
-        ("define_data_schema","ER sketch + metric definitions + data dictionary"),
-    ]
-    for key, trigger in skills:
-        lines.append(f"  {key}:")
-        lines.append(f"    skill_file: {_yaml_str(kit_rel_path + '/skills/' + key + '.md')}")
-        lines.append(f"    trigger: \"{trigger}\"")
-        lines.append("")
-
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +198,7 @@ _PLATFORM_PATHS: dict[str, str] = {
     "claude":      "CLAUDE.md",
     "copilot":     ".github/copilot-instructions.md",
     "cursor":      ".cursor/rules",
-    "antigravity": ".agkit/agents.yaml",
+    "antigravity": ".agent/rules/agents-maker.md",
 }
 
 
@@ -360,18 +243,20 @@ def generate_all(
         builders["cursor"] = (_PLATFORM_PATHS["cursor"], content)
 
     if "antigravity" in platforms:
-        content = build_agkit_yaml(project_name, domain, stack, phase, kit_rel_path)
+        # Antigravity reads always-on guidance from .agent/rules/*.md (native).
+        content = build_claude_md(project_name, domain, confidence, stack, phase, kit_rel_path)
         builders["antigravity"] = (_PLATFORM_PATHS["antigravity"], content)
 
-    # Claude Code subagents + slash commands (.claude/agents, .claude/commands).
-    if "claude_agents" in platforms:
+    # Native /command files for every tool: .claude/{agents,commands}, .agent/workflows,
+    # .cursor/commands, .github/prompts.
+    if "agents" in platforms:
         try:
-            from tools.generate_claude_agents import generate as _gen_claude
+            from tools.generate_agents import generate as _gen_agents
         except ImportError:
-            from generate_claude_agents import generate as _gen_claude
-        cw, cs = _gen_claude(project_root / ".claude", kit_dir, force=False, dry_run=dry_run)
+            from generate_agents import generate as _gen_agents
+        cw, cs = _gen_agents(project_root, kit_dir, template=False, force=False, dry_run=dry_run)
         tag = "[dry-run] would write" if dry_run else "  [DONE]"
-        print(f"{tag} {len(cw)} .claude/ file(s) — subagents + slash commands"
+        print(f"{tag} {len(cw)} /command file(s) across tool folders"
               + (f"; kept {len(cs)} existing" if cs else ""))
 
     if dry_run:

@@ -4,6 +4,19 @@
 const fs = require('fs');
 const path = require('path');
 
+// dist template subdir -> project target subdir (per tool's native command folder)
+const TOOL_MAP = [
+  ['claude/agents',         '.claude/agents',   'Claude Code'],
+  ['claude/commands',       '.claude/commands', 'Claude Code'],
+  ['antigravity/workflows', '.agent/workflows', 'Antigravity'],
+  ['cursor/commands',       '.cursor/commands', 'Cursor'],
+  ['copilot/prompts',       '.github/prompts',  'Copilot'],
+];
+
+// Command names (kept in sync with dist/) — used only for the printed hint.
+const COMMANDS_HINT = ['brain', 'planpro', 'orchestrate', 'architect', 'code',
+  'execute', 'ui', 'ux', 'review', 'compress'];
+
 const command = process.argv[2];
 
 if (!command || command === '--help' || command === '-h') {
@@ -55,24 +68,27 @@ if (command === 'init') {
   // Make shell script executable on Unix
   try { fs.chmodSync(path.join(dest, 'quickstart.sh'), 0o755); } catch (_) {}
 
-  // Install Claude Code subagents + slash commands into the project-root .claude/
-  // so `/brain`, `/planpro`, `/code`, … are usable immediately. Non-destructive:
-  // never overwrite a file the user already has.
-  const commands = installClaude(path.join(kitRoot, 'claude'), path.join(process.cwd(), '.claude'));
+  // Install native /command files into every tool's folder so `/brain`, `/planpro`,
+  // `/code`, … work in whichever chat box the user uses. Non-destructive.
+  const projectRoot = process.cwd();
+  const wired = installCommands(path.join(kitRoot, 'dist'), projectRoot);
+
+  // Keep the bulky helper out of the user's commits; the small command files stay.
+  const ignored = ensureGitignored(projectRoot, 'agents-maker/');
 
   console.log('');
   console.log('✓ agents-maker/ ready');
-  if (commands.length) {
-    console.log('✓ .claude/ agents + commands installed');
+  if (wired.length) {
+    console.log('✓ /commands installed for: ' + wired.join(', '));
     console.log('');
-    console.log('  Slash commands: ' + commands.map(c => '/' + c).join('  '));
+    console.log('  Commands: ' + COMMANDS_HINT.map(c => '/' + c).join('  '));
   }
+  if (ignored) console.log('✓ agents-maker/ added to .gitignore (kept out of your commits)');
   console.log('');
-  console.log('Next — run from your project root:');
-  console.log('  macOS / Linux / WSL:  bash agents-maker/quickstart.sh');
-  console.log('  Windows:              .\\agents-maker\\quickstart.ps1');
+  console.log('Use them now — type "/" in your AI chat box:');
+  console.log('  Antigravity → .agent/workflows   Claude Code → .claude   Cursor → .cursor/commands   Copilot → .github/prompts');
   console.log('');
-  console.log('This validates the kit and generates system_prompt.md for your project.');
+  console.log('Optional (Python): bash agents-maker/quickstart.sh  ·  .\\agents-maker\\quickstart.ps1');
   process.exit(0);
 }
 
@@ -90,26 +106,37 @@ function copyDir(src, dst) {
   }
 }
 
-// Merge claude/{agents,commands}/*.md into <project>/.claude/, skipping any file
-// that already exists (so we never clobber the user's own agents/commands).
-// Returns the list of command names now available.
-function installClaude(templateRoot, claudeRoot) {
-  if (!fs.existsSync(templateRoot)) return [];
-  const commands = [];
-  for (const sub of ['agents', 'commands']) {
-    const srcDir = path.join(templateRoot, sub);
+// Copy each dist/<tool> into its project target, skipping files that already
+// exist (never clobber the user's own commands). Returns the list of tool names wired.
+function installCommands(distRoot, projectRoot) {
+  const tools = new Set();
+  for (const [srcSub, dstSub, toolName] of TOOL_MAP) {
+    const srcDir = path.join(distRoot, srcSub);
     if (!fs.existsSync(srcDir)) continue;
-    const dstDir = path.join(claudeRoot, sub);
+    const dstDir = path.join(projectRoot, dstSub);
     fs.mkdirSync(dstDir, { recursive: true });
     for (const entry of fs.readdirSync(srcDir)) {
       const dstFile = path.join(dstDir, entry);
       if (fs.existsSync(dstFile)) {
-        console.log(`  (kept existing .claude/${sub}/${entry})`);
+        console.log(`  (kept existing ${dstSub}/${entry})`);
         continue;
       }
       fs.copyFileSync(path.join(srcDir, entry), dstFile);
-      if (sub === 'commands' && entry.endsWith('.md')) commands.push(entry.replace(/\.md$/, ''));
+      tools.add(toolName);
     }
   }
-  return commands;
+  return [...tools];
+}
+
+// Append a pattern to <project>/.gitignore idempotently (create the file if missing).
+function ensureGitignored(projectRoot, pattern) {
+  const gi = path.join(projectRoot, '.gitignore');
+  let text = '';
+  if (fs.existsSync(gi)) text = fs.readFileSync(gi, 'utf8');
+  const has = text.split(/\r?\n/).some(l => l.trim().replace(/\/$/, '') === pattern.replace(/\/$/, ''));
+  if (has) return false;
+  const block = (text && !text.endsWith('\n') ? '\n' : '') +
+    '\n# agents-maker helper kit (local only — not part of the project)\n' + pattern + '\n';
+  fs.appendFileSync(gi, block);
+  return true;
 }

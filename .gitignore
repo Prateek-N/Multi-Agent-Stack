@@ -14,8 +14,9 @@ venv/
 env/
 .env
 *.egg-info/
-dist/
 build/
+# NOTE: dist/ is intentionally tracked — it holds the committed per-tool /command
+# templates that `npx init` copies into a project. It is NOT a Python build dir.
 .pytest_cache/
 .mypy_cache/
 

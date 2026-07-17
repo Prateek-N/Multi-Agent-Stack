@@ -213,9 +213,9 @@ def main() -> None:
         "--platforms",
         action="store_true",
         help=(
-            "Generate config files for ALL supported platforms: "
-            "Claude Code (CLAUDE.md), GitHub Copilot (.github/copilot-instructions.md), "
-            "Cursor (.cursor/rules), Antigravity (.agkit/agents.yaml). "
+            "Generate config files + native /command files for ALL supported platforms: "
+            "Claude Code (CLAUDE.md, .claude/), GitHub Copilot (.github/), "
+            "Cursor (.cursor/), Antigravity (.agent/). "
             "Supersedes --claude-md."
         ),
     )

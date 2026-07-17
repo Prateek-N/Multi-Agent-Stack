@@ -86,11 +86,31 @@ The quickstart script handles everything:
 
 ---
 
-## 🧠 Clone & Invoke — named agents in your project
+## 🧠 Clone & Invoke — named `/commands` in any tool
 
-`npx @prateek_ai/agents-maker init` also installs **Claude Code subagents + slash commands**
-into your project's `.claude/` (non-destructively — it never overwrites your own files). Open
-the project in Claude Code and invoke any agent by name:
+Run this from your project root:
+
+```bash
+npx @prateek_ai/agents-maker init
+```
+
+One command does three things:
+
+1. **Installs native `/command` files for every tool** (non-destructively — never overwrites your
+   own files), each in the folder that tool actually reads:
+
+   | Tool | Folder it installs to |
+   |---|---|
+   | 🟡 **Antigravity** (IDE) | `.agent/workflows/` |
+   | 🟣 **Claude Code** | `.claude/commands/` + `.claude/agents/` |
+   | 🔵 **Cursor** (1.6+) | `.cursor/commands/` |
+   | 🟢 **GitHub Copilot** (VS Code) | `.github/prompts/` |
+
+2. **Adds `agents-maker/` to your `.gitignore`** so the bulky helper kit never lands in your commits —
+   while the small command files stay, so teammates who clone still get the commands.
+3. Drops the kit into `agents-maker/` (for updates / the Python tools).
+
+Then type **`/`** in your AI chat box and pick an agent:
 
 ```
 /brain      Brainstorm the whole project — 3+ approaches, trade-offs, one recommendation
@@ -105,23 +125,27 @@ the project in Claude Code and invoke any agent by name:
 /compress   Compress context / summarize session state
 ```
 
-Typical flow: **`/brain`** to explore options → **`/planpro`** to lock a plan → **`/code`** to
-build → **`/review`** to check it. The main agent can also delegate to these as subagents.
+Every command file is **self-contained** (the full agent spec is embedded), so the commands keep
+working even though `agents-maker/` is gitignored. Typical flow: **`/brain`** → **`/planpro`** →
+**`/code`** → **`/review`**.
+
+> **Antigravity note:** commands come from `.agent/workflows/` (singular `.agent`). If `/` shows
+> nothing, confirm those files exist and reload the window.
 
 ### ⚠️ What the agents can do — stay in control
 
-The installed agents run with **full tool access** — `Read, Grep, Glob, Edit, Write, Bash` —
-so build agents like `/code` and `/execute` **can modify files and run shell commands** in your
-project. Claude Code still asks for your approval on each tool use; treat that as real:
+The agents run with **full tool access** — `Read, Grep, Glob, Edit, Write, Bash` — so build agents
+like `/code` and `/execute` **can modify files and run shell commands** in your project. Your tool
+still asks for approval on each tool use; treat that as real:
 
 - **Work on a branch** and keep everything under **git** — so any change is easy to review and undo.
 - **Review diffs** before accepting; don't blind-approve Bash you don't understand.
 - `/brain`, `/planpro`, and `/review` are advisory by nature (they read and recommend).
-- **Want stricter defaults?** These are plain files you own — edit the `tools:` line in
-  `.claude/agents/<name>.md` (e.g. remove `Bash`/`Edit`/`Write`) to make any agent read-only.
+- **Want stricter defaults?** These are plain files you own — edit the tool list in a command file
+  (e.g. `.claude/agents/<name>.md`) to make any agent read-only.
 
-> Regenerate the `.claude/` files any time (e.g. after adding agents):
-> `python agents-maker/tools/generate_claude_agents.py`
+> Regenerate the command files any time (e.g. after editing an agent spec):
+> `python agents-maker/tools/generate_agents.py`
 
 ---
 
@@ -195,7 +219,7 @@ This writes a native config file for each platform — committed to git, auto-lo
 | 🟣 **Claude Code** | `CLAUDE.md` | Auto-read every session — domain, stack, phase, agent routing loaded silently |
 | 🟢 **GitHub Copilot** | `.github/copilot-instructions.md` | Workspace-level instructions — Copilot applies agent routing on every suggestion |
 | 🔵 **Cursor** | `.cursor/rules` | Persistent AI rules — Cursor applies domain context across all tabs |
-| ⚡ **Antigravity** | `.agkit/agents.yaml` | Full agent pipeline config — all 10 agents + 12 skills registered with phase/domain wiring |
+| ⚡ **Antigravity** | `.agent/workflows/` + `.agent/rules/` | Native slash-command workflows for all 10 agents, plus always-on project rules |
 
 **Commit all generated files** — they are project config, not private state. Every developer who clones the repo gets the full multi-agent setup automatically.
 

@@ -22,7 +22,7 @@
     "platforms/",
     "docs/",
     "examples/",
-    "claude/",
+    "dist/",
     "PROMPT_TEMPLATE.md",
     "quickstart.sh",
     "quickstart.ps1",

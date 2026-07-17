@@ -345,33 +345,42 @@ check(60, "--full --compress -> contains both system prompt and Output Policy",
       ("Orchestrator" in out or "orchestrator" in out) and "## Output Policy" in out, "")
 
 # -------------------------------------------------------------
-# M. generate_claude_agents.py — subagents + slash commands
+# M. generate_agents.py — native /commands for every tool
 # -------------------------------------------------------------
-section("M. generate_claude_agents.py — .claude/ subagents + commands")
+section("M. generate_agents.py — /commands for Antigravity/Claude/Cursor/Copilot")
 
-rc, out, err = run([PY, "tools/generate_claude_agents.py", "--template", "--dry-run"])
-check(61, "generate_claude_agents --dry-run exits 0", rc == 0, err[:200])
-check(62, "dry-run reports 20 files (10 agents + 10 commands)",
-      out.count("agents/") >= 10 and out.count("commands/") >= 10, out[:300])
+rc, out, err = run([PY, "tools/generate_agents.py", "--template", "--dry-run", "--force"])
+check(61, "generate_agents --dry-run exits 0", rc == 0, err[:200])
+check(62, "dry-run reports 50 files (10 x 5 tool outputs)",
+      out.count(".md") >= 50 or "50 file" in out, out[:300])
 
-claude_agents_dir = ROOT / "claude" / "agents"
-claude_cmds_dir = ROOT / "claude" / "commands"
-agent_files = sorted(claude_agents_dir.glob("*.md")) if claude_agents_dir.is_dir() else []
-cmd_files = sorted(claude_cmds_dir.glob("*.md")) if claude_cmds_dir.is_dir() else []
-check(63, "committed claude/ templates: 10 agents + 10 commands",
-      len(agent_files) == 10 and len(cmd_files) == 10,
-      f"agents={len(agent_files)} commands={len(cmd_files)}")
+dist = ROOT / "dist"
+tool_dirs = {
+    "antigravity/workflows": 10,
+    "claude/agents": 10,
+    "claude/commands": 10,
+    "cursor/commands": 10,
+    "copilot/prompts": 10,
+}
+counts = {d: len(sorted((dist / d).glob("*.md"))) for d in tool_dirs}
+check(63, "committed dist/: 10 files per tool folder",
+      all(counts[d] == n for d, n in tool_dirs.items()), str(counts))
 
-pp = claude_agents_dir / "planpro.md"
-pp_text = pp.read_text(encoding="utf-8") if pp.exists() else ""
-check(64, "subagent planpro.md has valid frontmatter (name/tools/model)",
-      "name: planpro" in pp_text and "tools:" in pp_text and "model: inherit" in pp_text,
-      pp_text[:200])
+# Antigravity workflow: description frontmatter + embedded full spec (self-contained)
+ag = dist / "antigravity" / "workflows" / "planpro.md"
+ag_text = ag.read_text(encoding="utf-8") if ag.exists() else ""
+check(64, "antigravity planpro workflow: description frontmatter + embedded spec",
+      ag_text.startswith("---") and "description:" in ag_text and "PlanPro" in ag_text,
+      ag_text[:160])
 
-brain_cmd = claude_cmds_dir / "brain.md"
-bc_text = brain_cmd.read_text(encoding="utf-8") if brain_cmd.exists() else ""
-check(65, "command brain.md has description + $ARGUMENTS",
-      "description:" in bc_text and "$ARGUMENTS" in bc_text, bc_text[:200])
+# Copilot prompt uses ${input:task}; Cursor is plain; Claude subagent has name/tools
+cop = (dist / "copilot" / "prompts" / "brain.prompt.md")
+cop_text = cop.read_text(encoding="utf-8") if cop.exists() else ""
+cl = (dist / "claude" / "agents" / "brain.md")
+cl_text = cl.read_text(encoding="utf-8") if cl.exists() else ""
+check(65, "copilot prompt has ${input:task} and claude subagent has frontmatter",
+      "${input:task}" in cop_text and "name: brain" in cl_text and "tools:" in cl_text,
+      cop_text[:120])
 
 # -------------------------------------------------------------
 # Summary
