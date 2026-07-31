@@ -1,4 +1,4 @@
-import { REPO_URL } from '../lib/config';
+import { NPM_URL, REPO_URL } from '../lib/config';
 
 const TERMINAL_LINES = [
   { text: '$ npx @prateek_ai/agents-maker init', cls: 'text-body-strong' },
@@ -128,6 +128,27 @@ export default function Hero() {
               }}
             >
               View on GitHub
+            </a>
+            <a
+              href={NPM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-xxs border border-ink text-ink hover:bg-canvas-elevated transition-colors"
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                letterSpacing: '1.4px',
+                textTransform: 'uppercase',
+                padding: '13px 24px',
+                height: '48px',
+                borderRadius: '0px',
+              }}
+              aria-label="View on npm"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z" />
+              </svg>
+              npm
             </a>
           </div>
         </div>

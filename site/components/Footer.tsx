@@ -1,4 +1,4 @@
-import { REPO_URL as REPO } from '../lib/config';
+import { NPM_URL, REPO_URL as REPO } from '../lib/config';
 
 const cols = [
   {
@@ -35,6 +35,7 @@ const cols = [
     title: 'Connect',
     links: [
       { label: 'GitHub', href: REPO },
+      { label: 'npm', href: NPM_URL },
       { label: 'Issues', href: `${REPO}/issues` },
       { label: 'Releases', href: `${REPO}/releases` },
       { label: 'MIT License', href: `${REPO}/blob/main/LICENSE` },

@@ -3,3 +3,4 @@
 export const REPO_URL = 'https://github.com/Prateek-N/Multi-Agent-Stack';
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://agents-maker.vercel.app';
 export const NPM_PACKAGE = '@prateek_ai/agents-maker';
+export const NPM_URL = `https://www.npmjs.com/package/${NPM_PACKAGE}`;

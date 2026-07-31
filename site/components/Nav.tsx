@@ -1,4 +1,4 @@
-import { REPO_URL } from '../lib/config';
+import { NPM_URL, REPO_URL } from '../lib/config';
 
 export default function Nav() {
   return (
@@ -19,6 +19,7 @@ export default function Nav() {
         <nav className="hidden md:flex items-center gap-lg">
           {[
             { label: 'GITHUB', href: REPO_URL },
+            { label: 'NPM', href: NPM_URL },
             { label: 'DOCS', href: `${REPO_URL}#readme` },
             { label: 'QUICKSTART', href: '#quickstart' },
           ].map(({ label, href }) => (
