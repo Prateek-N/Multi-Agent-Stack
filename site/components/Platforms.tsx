@@ -4,8 +4,8 @@ import Eyebrow from './ui/Eyebrow';
 const platforms = [
   {
     name: 'Claude Code',
-    file: 'CLAUDE.md',
-    description: 'Auto-loaded every session via Project Instructions. Domain, phase, and agent routing — zero copy-paste.',
+    file: '.claude/commands/ + .claude/agents/',
+    description: 'Native /brain, /planpro, /code … slash commands and subagents. Plus CLAUDE.md for always-on context.',
     color: '#8B5CF6',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -15,8 +15,8 @@ const platforms = [
   },
   {
     name: 'GitHub Copilot',
-    file: '.github/copilot-instructions.md',
-    description: 'Workspace-level instructions. Copilot applies agent routing automatically on every suggestion.',
+    file: '.github/prompts/',
+    description: 'Prompt-file slash commands in VS Code chat. Plus copilot-instructions.md for workspace context.',
     color: '#2EA44F',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -26,8 +26,8 @@ const platforms = [
   },
   {
     name: 'Cursor',
-    file: '.cursor/rules',
-    description: 'Persistent AI rules across all tabs. Domain context and phase tracking applied on every interaction.',
+    file: '.cursor/commands/',
+    description: 'Native slash commands (Cursor 1.6+) across all tabs. Plus .cursor/rules for persistent context.',
     color: '#00A9FF',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
@@ -38,8 +38,8 @@ const platforms = [
   },
   {
     name: 'Antigravity',
-    file: '.agkit/agents.yaml',
-    description: 'Full agent pipeline config — all 10 agents and 12 skills registered with phase and domain wiring.',
+    file: '.agent/workflows/',
+    description: 'Native slash-command workflows for all 10 agents, plus always-on project rules in .agent/rules/.',
     color: '#F59E0B',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
