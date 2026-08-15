@@ -178,11 +178,14 @@ def detect_containerization(root: Path) -> str:
     return "none"
 
 
-def find_services(root: Path, max_depth: int = 3) -> list[tuple[str, str]]:
-    """Return list of (path, description) for service/module directories."""
-    results = []
+def _iter_subdirs(root: Path, skip: tuple[str, ...], max_depth: int = 3):
+    """Yield (relative_posix_path, lowercased_name) for each subdirectory of root,
+    pre-order DFS, skipping any directory whose lowercased name contains a skip token.
 
-    def _scan(directory: Path, depth: int) -> None:
+    One walker for both find_services and find_test_dirs — each passes its own skip
+    set and matches yielded names against its own patterns, so results are unchanged.
+    """
+    def _scan(directory: Path, depth: int):
         if depth > max_depth:
             return
         try:
@@ -193,20 +196,28 @@ def find_services(root: Path, max_depth: int = 3) -> list[tuple[str, str]]:
             if not entry.is_dir():
                 continue
             name_lower = entry.name.lower()
-            if any(p in name_lower for p in ("__pycache__", ".git", "node_modules", ".venv")):
+            if any(p in name_lower for p in skip):
                 continue
             rel = str(entry.relative_to(root)).replace("\\", "/")
-            for pattern in SERVICE_DIR_PATTERNS:
-                if pattern in name_lower:
-                    results.append((rel + "/", "service/handler layer"))
-                    break
-            for pattern in MODEL_DIR_PATTERNS:
-                if pattern in name_lower:
-                    results.append((rel + "/", "data models / schemas"))
-                    break
-            _scan(entry, depth + 1)
+            yield rel, name_lower
+            yield from _scan(entry, depth + 1)
 
-    _scan(root, 0)
+    yield from _scan(root, 0)
+
+
+def find_services(root: Path, max_depth: int = 3) -> list[tuple[str, str]]:
+    """Return list of (path, description) for service/module directories."""
+    results: list[tuple[str, str]] = []
+    skip = ("__pycache__", ".git", "node_modules", ".venv")
+    for rel, name_lower in _iter_subdirs(root, skip, max_depth):
+        for pattern in SERVICE_DIR_PATTERNS:
+            if pattern in name_lower:
+                results.append((rel + "/", "service/handler layer"))
+                break
+        for pattern in MODEL_DIR_PATTERNS:
+            if pattern in name_lower:
+                results.append((rel + "/", "data models / schemas"))
+                break
     return results[:10]
 
 
@@ -228,29 +239,13 @@ def find_entrypoints(root: Path) -> list[tuple[str, str]]:
 
 
 def find_test_dirs(root: Path) -> list[tuple[str, str]]:
-    results = []
-
-    # Skip dependency/VCS/build dirs so large repos aren't traversed (matches find_services).
+    # Skips venv/env in addition to find_services' set, so the two walks are kept
+    # separate (a true single pass would change which dirs each collector sees).
+    results: list[tuple[str, str]] = []
     skip = ("__pycache__", ".git", "node_modules", ".venv", "venv", "env")
-
-    def _scan(directory: Path, depth: int = 0) -> None:
-        if depth > 3:
-            return
-        try:
-            for entry in directory.iterdir():
-                if not entry.is_dir():
-                    continue
-                name_lower = entry.name.lower()
-                if any(p in name_lower for p in skip):
-                    continue
-                if any(p in name_lower for p in TEST_DIR_PATTERNS):
-                    rel = str(entry.relative_to(root)).replace("\\", "/")
-                    results.append((rel + "/", "test suite"))
-                _scan(entry, depth + 1)
-        except PermissionError:
-            pass
-
-    _scan(root)
+    for rel, name_lower in _iter_subdirs(root, skip, max_depth=3):
+        if any(p in name_lower for p in TEST_DIR_PATTERNS):
+            results.append((rel + "/", "test suite"))
     return results[:6]
 
 

@@ -19,6 +19,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+from typing import Callable
 
 # agents-maker/ (parent of tools/)
 KIT_DIR = Path(__file__).resolve().parent.parent
@@ -90,6 +91,52 @@ def source_hash(kit_dir: Path = KIT_DIR) -> str:
         except (OSError, PermissionError):
             pass
     return h.hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------
+# Token estimation (pluggable)
+# ---------------------------------------------------------------------------
+
+#: Offline heuristic: ~4 characters per token. Good enough for budgeting when no
+#: real tokenizer is available; swap in an accurate counter via `estimate_tokens`.
+CHARS_PER_TOKEN = 4
+
+
+def estimate_tokens(text: str, counter: Callable[[str], int] | None = None) -> int:
+    """Estimate the token count of ``text``.
+
+    Single source for token estimation across the kit. Defaults to an offline
+    ~4-chars/token heuristic so the kit stays dependency-free and API-key-free.
+    Pass ``counter`` to plug in an accurate tokenizer — e.g. Anthropic's
+    ``client.messages.count_tokens(...).input_tokens``. Do **not** use tiktoken
+    for Claude (it is OpenAI's tokenizer and undercounts Claude tokens).
+    """
+    if counter is not None:
+        return counter(text)
+    return max(1, len(text) // CHARS_PER_TOKEN)
+
+
+# ---------------------------------------------------------------------------
+# Snippet truncation — shared by file_chunker and the compressor
+# ---------------------------------------------------------------------------
+
+def truncate_snippet(
+    content: str, max_lines: int, head_lines: int, tail_lines: int
+) -> tuple[str, int]:
+    """Head+tail truncation with a gap marker.
+
+    Returns (text, lines_omitted). When the content is within ``max_lines`` it is
+    returned unchanged with 0 omitted. Single implementation for both the
+    context-loader (file_chunker) and the token-optimizer (compressor).
+    """
+    lines = content.splitlines()
+    if len(lines) <= max_lines:
+        return content, 0
+    head = lines[:head_lines]
+    tail = lines[-tail_lines:]
+    omitted = len(lines) - head_lines - tail_lines
+    gap = f"# ... [{omitted} lines omitted — request full file if needed] ..."
+    return "\n".join(head + [gap] + tail), omitted
 
 
 # ---------------------------------------------------------------------------

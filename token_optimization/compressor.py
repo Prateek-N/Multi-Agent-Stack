@@ -1,29 +1,43 @@
 """
 token_optimization/compressor.py
 
-Skeleton for the programmatic token optimization layer.
-Applies token policies from config/token_policies.yaml before sending
-a prompt to any LLM provider.
+Reference implementation of the programmatic token-optimization layer.
+
+IMPORTANT — this is an OPT-IN library, not an always-on step. The daily-driver
+paste flow (tools/generate_prompt.py) does NOT run this pipeline; `--compress`
+there only surfaces the active token policy (limits + output style) so the model
+self-limits. Reach for this module when you build a real API integration (see
+platforms/claude.md) or want to dry-run the relevance-filter + truncate pipeline
+offline. Provider adapters are stubs: implement ProviderAdapter.send() to send
+the compressed context — this module makes NO live HTTP calls itself.
 
 Usage (dry run, no API calls):
     python token_optimization/compressor.py --dry-run \\
         --policy feature_implementation \\
         --context-file /path/to/context.txt \\
         --query "Add soft-delete to UserService"
-
-This module has NO live HTTP calls. Implement a ProviderAdapter subclass
-and call adapter.send(compressed_context) to integrate with a real API.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+# Snippet truncation is shared with file_chunker via tools/_core. Bootstrap the
+# kit root onto sys.path so `python token_optimization/compressor.py` runs standalone.
+_KIT_ROOT = Path(__file__).resolve().parent.parent
+if str(_KIT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_KIT_ROOT))
+try:
+    from tools._core import truncate_snippet
+except ImportError:  # pragma: no cover
+    from _core import truncate_snippet
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -196,7 +210,6 @@ class RelevanceFilter:
     @staticmethod
     def _symbol_mention(content: str, query: str) -> float:
         """Detect if any identifier from content appears in the query."""
-        import re
         identifiers = set(re.findall(r"\b[a-zA-Z_][a-zA-Z0-9_]{3,}\b", content))
         query_lower = query.lower()
         for ident in identifiers:
@@ -216,17 +229,16 @@ class SnippetTruncator:
         self.policy = policy
 
     def truncate(self, f: FileEntry) -> FileEntry:
-        lines = f.content.splitlines()
-        if len(lines) <= self.policy.snippet_max_lines:
-            return f
-
-        head = lines[: self.policy.snippet_head_lines]
-        tail = lines[-self.policy.snippet_tail_lines :]
-        omitted = len(lines) - self.policy.snippet_head_lines - self.policy.snippet_tail_lines
-        gap = f"# ... [{omitted} lines omitted — request full file if needed] ..."
-        f.content = "\n".join(head + [gap] + tail)
-        f.truncated = True
-        f.lines_omitted = omitted
+        new_content, omitted = truncate_snippet(
+            f.content,
+            self.policy.snippet_max_lines,
+            self.policy.snippet_head_lines,
+            self.policy.snippet_tail_lines,
+        )
+        if omitted > 0:
+            f.content = new_content
+            f.truncated = True
+            f.lines_omitted = omitted
         return f
 
 
@@ -292,11 +304,11 @@ class ProviderAdapter(ABC):
 
 class ClaudeAdapter(ProviderAdapter):
     """
-    Adapter for Anthropic Claude (claude-sonnet-4-6, claude-opus-4-7, etc.).
+    Adapter for Anthropic Claude (claude-opus-4-8, claude-sonnet-5, etc.).
     See platforms/claude.md for full integration guide.
     """
 
-    def __init__(self, model: str = "claude-sonnet-4-6", api_key: str = "") -> None:
+    def __init__(self, model: str = "claude-opus-4-8", api_key: str = "") -> None:
         self.model = model
         self.api_key = api_key
 

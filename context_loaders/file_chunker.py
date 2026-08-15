@@ -38,6 +38,16 @@ import argparse
 import sys
 from pathlib import Path
 
+# Snippet truncation is shared with the compressor via tools/_core. Bootstrap the
+# kit root onto sys.path so this script works standalone from context_loaders/.
+_KIT_ROOT = Path(__file__).resolve().parent.parent
+if str(_KIT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_KIT_ROOT))
+try:
+    from tools._core import truncate_snippet
+except ImportError:  # pragma: no cover
+    from _core import truncate_snippet
+
 # Default truncation settings (matches token_optimization defaults)
 DEFAULT_MAX_LINES = 200
 DEFAULT_HEAD_LINES = 40
@@ -79,19 +89,12 @@ def _lang_tag(path: Path) -> str:
 
 
 def truncate_content(content: str, max_lines: int, head_lines: int, tail_lines: int) -> tuple[str, int]:
-    """
-    Truncate content to head + tail with a gap marker.
-    Returns (truncated_content, lines_omitted).
-    """
-    lines = content.splitlines()
-    if len(lines) <= max_lines:
-        return content, 0
+    """Truncate content to head + tail with a gap marker.
 
-    head = lines[:head_lines]
-    tail = lines[-tail_lines:]
-    omitted = len(lines) - head_lines - tail_lines
-    gap = f"# ... [{omitted} lines omitted — request full file if needed] ..."
-    return "\n".join(head + [gap] + tail), omitted
+    Returns (truncated_content, lines_omitted). Thin wrapper over the shared
+    tools._core.truncate_snippet so the two consumers can never drift.
+    """
+    return truncate_snippet(content, max_lines, head_lines, tail_lines)
 
 
 def read_file(

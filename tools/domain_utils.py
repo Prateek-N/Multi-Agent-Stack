@@ -24,25 +24,19 @@ _KIT_DIR = _HERE.parent
 if str(_KIT_DIR) not in sys.path:
     sys.path.insert(0, str(_KIT_DIR))
 
+# YAML loading is shared with every other tool via _core (single implementation).
 try:
-    import yaml
+    from tools._core import load_yaml
 except ImportError:
-    print("[ERROR] pyyaml is required: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
+    from _core import load_yaml
 
-
-def _load_yaml(path: Path) -> dict:
-    try:
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except yaml.YAMLError as e:
-        print(f"[ERROR] YAML parse error in {path}: {e}", file=sys.stderr)
-        return {}
-    except FileNotFoundError:
-        return {}
-    except PermissionError:
-        print(f"[ERROR] Permission denied reading {path}", file=sys.stderr)
-        return {}
+# The built-in domain keys, in canonical order — the single source for the set
+# of domains accepted by `[domain: X]` overrides and init_project's domain prompt.
+# Detection *signals* live in domain_profiles.yaml; this is just the accepted set.
+BUILTIN_DOMAINS: tuple[str, ...] = (
+    "software", "content", "research", "data_analytics",
+    "product_design", "marketing", "ops_process", "general",
+)
 
 
 def score_domain(
@@ -114,7 +108,7 @@ def detect_domain(
         print(f"[WARN] domain_profiles.yaml not found at {domain_cfg_path} — defaulting to 'general'", file=sys.stderr)
         return ("general", "low", 0.0) if include_score else ("general", "low")
 
-    raw = _load_yaml(domain_cfg_path)
+    raw = load_yaml(domain_cfg_path)
     if not raw:
         return ("general", "low", 0.0) if include_score else ("general", "low")
 

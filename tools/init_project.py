@@ -34,11 +34,11 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from tools._core import atomic_write, atomic_write_yaml, load_yaml, source_hash
-    from tools.domain_utils import detect_domain as _detect_domain
+    from tools._core import atomic_write, atomic_write_yaml, estimate_tokens, load_yaml, source_hash
+    from tools.domain_utils import BUILTIN_DOMAINS, detect_domain as _detect_domain
 except ImportError:
-    from _core import atomic_write, atomic_write_yaml, load_yaml, source_hash
-    from domain_utils import detect_domain as _detect_domain
+    from _core import atomic_write, atomic_write_yaml, estimate_tokens, load_yaml, source_hash
+    from domain_utils import BUILTIN_DOMAINS, detect_domain as _detect_domain
 
 
 def detect_domain(summary_text: str) -> tuple[str, str]:
@@ -171,10 +171,7 @@ task_framing
 (add notes after each session)
 """
 
-VALID_DOMAINS = [
-    "software", "content", "research", "data_analytics",
-    "product_design", "marketing", "ops_process", "general",
-]
+VALID_DOMAINS = BUILTIN_DOMAINS
 
 
 # ---------------------------------------------------------------------------
@@ -317,7 +314,7 @@ def main() -> None:
             print(f"[ERROR] Could not write system_prompt.md: {e}", file=sys.stderr)
             sys.exit(1)
         char_count = len(system_prompt_text)
-        token_estimate = char_count // 4
+        token_estimate = estimate_tokens(system_prompt_text)
         system_prompt_status = f"(~{char_count:,} chars, ~{token_estimate:,} tokens)"
         system_prompt_done = True
     else:

@@ -36,37 +36,18 @@ sys.path.insert(0, str(KIT_DIR))
 
 try:
     from tools._core import atomic_write, load_yaml, py_invocation
-    from tools.generate_claude_md import (
-        _AGENT_ROLES,
-        _PHASE_AGENTS,
-        _PHASE_LABELS,
-        _parse_phase,
-        build_claude_md,
-    )
+    from tools.routing import PHASE_LABELS, agent_role_list, phase_agents
+    from tools.generate_claude_md import _parse_phase, build_claude_md
 except ImportError:
     from _core import atomic_write, load_yaml, py_invocation
-    from generate_claude_md import (
-        _AGENT_ROLES,
-        _PHASE_AGENTS,
-        _PHASE_LABELS,
-        _parse_phase,
-        build_claude_md,
-    )
+    from routing import PHASE_LABELS, agent_role_list, phase_agents
+    from generate_claude_md import _parse_phase, build_claude_md
 
 PLATFORMS = ["claude", "agents", "copilot", "cursor", "antigravity"]
 
 # ---------------------------------------------------------------------------
 # Helpers shared across builders
 # ---------------------------------------------------------------------------
-
-def _active_agents(domain: str, phase: str) -> list[str]:
-    phase_map = _PHASE_AGENTS.get(phase, {"_all": ["orchestrator"]})
-    return phase_map.get(domain, phase_map["_all"])
-
-
-def _agent_list_str(agents: list[str]) -> str:
-    return ", ".join(f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents)
-
 
 def _yaml_str(value: str) -> str:
     """Return a YAML-safe scalar: quoted if it contains spaces or YAML special characters."""
@@ -88,8 +69,8 @@ def build_copilot_md(
     kit_rel_path: str,
 ) -> str:
     stack_str = ", ".join(stack) if stack else "unknown"
-    phase_label = _PHASE_LABELS.get(phase, phase)
-    agents = _active_agents(domain, phase)
+    phase_label = PHASE_LABELS.get(phase, phase)
+    agents = phase_agents(phase, domain)
     regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
 
     all_agents = [
@@ -114,7 +95,7 @@ def build_copilot_md(
         f"\n"
         f"## Agent Routing\n"
         f"This project uses the agents-maker multi-agent framework.\n"
-        f"Active agents for this phase: {_agent_list_str(agents)}.\n"
+        f"Active agents for this phase: {agent_role_list(agents)}.\n"
         f"\n"
         f"Full agent roster:\n"
         + "".join(f"- {a}\n" for a in all_agents)
@@ -147,8 +128,8 @@ def build_cursor_rules(
     kit_rel_path: str,
 ) -> str:
     stack_str = ", ".join(stack) if stack else "unknown"
-    phase_label = _PHASE_LABELS.get(phase, phase)
-    agents = _active_agents(domain, phase)
+    phase_label = PHASE_LABELS.get(phase, phase)
+    agents = phase_agents(phase, domain)
     regen_cmd = py_invocation(kit_rel_path, "generate_platform_configs.py")
 
     return (
@@ -167,7 +148,7 @@ def build_cursor_rules(
         f"\n"
         f"## Agent Routing\n"
         f"All tasks in this project route through the agents-maker multi-agent framework.\n"
-        f"Orchestrator is always active. Specialist agents for this phase: {_agent_list_str(agents)}.\n"
+        f"Orchestrator is always active. Specialist agents for this phase: {agent_role_list(agents)}.\n"
         f"\n"
         f"## Instructions\n"
         f"- Apply domain routing and phase context from agents-maker before every task.\n"

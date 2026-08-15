@@ -14,7 +14,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
@@ -26,25 +25,22 @@ sys.path.insert(0, str(KIT_DIR))
 
 try:
     from tools._core import atomic_write, load_yaml, py_invocation
-    from tools.routing import AGENT_ROLES, PHASE_AGENTS, PHASE_LABELS, phase_agents
+    from tools.routing import PHASE_LABELS, agent_role_list, parse_current_phase, phase_agents
 except ImportError:
     from _core import atomic_write, load_yaml, py_invocation
-    from routing import AGENT_ROLES, PHASE_AGENTS, PHASE_LABELS, phase_agents
+    from routing import PHASE_LABELS, agent_role_list, parse_current_phase, phase_agents
 
-# Backward-compatible aliases (generate_platform_configs imports these names).
-_PHASE_AGENTS = PHASE_AGENTS
+# Local short alias used by build_claude_md below.
 _PHASE_LABELS = PHASE_LABELS
-_AGENT_ROLES = AGENT_ROLES
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 def _parse_phase(state_text: str) -> str:
-    m = re.search(r"##\s+Current Phase\s*\n+(\S+)", state_text)
-    if m:
-        return m.group(1).strip()
-    return "task_framing"
+    # Thin wrapper — generate_platform_configs and init_project import this name.
+    # Phase parsing itself lives once in routing.parse_current_phase.
+    return parse_current_phase(state_text)
 
 
 def _active_agents(domain: str, phase: str) -> list[str]:
@@ -66,9 +62,7 @@ def build_claude_md(
     stack_str = ", ".join(stack) if stack else "unknown"
     phase_label = _PHASE_LABELS.get(phase, phase)
     agents = _active_agents(domain, phase)
-    agent_list = ", ".join(
-        f"{a} ({_AGENT_ROLES.get(a, 'specialist')})" for a in agents
-    )
+    agent_list = agent_role_list(agents)
     regen_cmd = py_invocation(kit_rel_path, "generate_claude_md.py")
     prompt_cmd = py_invocation(kit_rel_path, "generate_prompt.py")
 

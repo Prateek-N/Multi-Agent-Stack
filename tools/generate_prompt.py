@@ -43,13 +43,13 @@ MAX_PROBLEM_LENGTH = 5000
 # ---------------------------------------------------------------------------
 
 try:
-    from tools._core import atomic_write_yaml, load_yaml
-    from tools.domain_utils import detect_domain as _du_detect
-    from tools.routing import active_agents, domain_agents
+    from tools._core import atomic_write_yaml, estimate_tokens, load_yaml
+    from tools.domain_utils import BUILTIN_DOMAINS, detect_domain as _du_detect
+    from tools.routing import active_agents, domain_agents, parse_current_phase
 except ImportError:
-    from _core import atomic_write_yaml, load_yaml
-    from domain_utils import detect_domain as _du_detect
-    from routing import active_agents, domain_agents
+    from _core import atomic_write_yaml, estimate_tokens, load_yaml
+    from domain_utils import BUILTIN_DOMAINS, detect_domain as _du_detect
+    from routing import active_agents, domain_agents, parse_current_phase
 
 
 def detect_domain(problem: str) -> tuple[str, str, float]:
@@ -59,15 +59,6 @@ def detect_domain(problem: str) -> tuple[str, str, float]:
 # ---------------------------------------------------------------------------
 # Phase inference
 # ---------------------------------------------------------------------------
-
-PHASES = [
-    "task_framing",
-    "requirements",
-    "solution_design",
-    "implementation",
-    "review_refinement",
-    "handoff",
-]
 
 PHASE_ALIASES = {
     "framing": "task_framing",
@@ -90,22 +81,7 @@ def infer_phase(state_path: Path) -> str:
         text = state_path.read_text(encoding="utf-8")
     except (OSError, PermissionError):
         return "task_framing"
-
-    # Look for "## Current Phase" section and read the next non-empty line
-    in_phase_section = False
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped == "## Current Phase":
-            in_phase_section = True
-            continue
-        if in_phase_section:
-            if stripped and not stripped.startswith("#"):
-                for phase in PHASES:
-                    if phase in stripped.lower():
-                        return phase
-                # Line found but didn't match — stop looking
-                break
-    return "task_framing"
+    return parse_current_phase(text)
 
 
 # ---------------------------------------------------------------------------
@@ -195,8 +171,8 @@ def build_scoped_system(agents: list[str], skills: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 def _token_est(text: str) -> int:
-    """Rough estimate: 1 token ≈ 4 chars. For accuracy use anthropic SDK count_tokens."""
-    return max(1, len(text) // 4)
+    """Rough estimate via the shared pluggable estimator (offline ~4 chars/token)."""
+    return estimate_tokens(text)
 
 
 # ---------------------------------------------------------------------------
@@ -337,10 +313,7 @@ def main() -> None:
         state_text = ""
 
     # Detect domain: honour explicit [domain: X] prefix first
-    _VALID_DOMAINS = [
-        "software", "content", "research", "data_analytics",
-        "product_design", "marketing", "ops_process", "general",
-    ]
+    _VALID_DOMAINS = BUILTIN_DOMAINS
     _prefix_m = re.match(r"^\[domain:\s*([a-z_]+)\]", args.problem.strip(), re.IGNORECASE)
     if _prefix_m and _prefix_m.group(1).lower() in _VALID_DOMAINS:
         domain = _prefix_m.group(1).lower()
