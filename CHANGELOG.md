@@ -6,7 +6,7 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ---
 
-## [Unreleased]
+## [1.1.0] - 2026-08-15
 
 ### Fixed
 - **Phase→agent routing single-sourced.** The routing table was hand-copied in
