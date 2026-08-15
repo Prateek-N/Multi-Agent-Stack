@@ -362,7 +362,14 @@ routing_priority:
   - compression_agent
 
 # ---------------------------------------------------------------------------
-# Generic Project Lifecycle — phase → agent mapping
+# Generic Project Lifecycle — phase metadata
+#
+# Phase -> agent ROUTING lives in ONE place: tools/routing.py (PHASE_AGENTS) is
+# the single source of truth consumed by every generator, and per-domain primary
+# agents are declared in config/domain_profiles.yaml (domains.<d>.primary_agents).
+# This block keeps only the lifecycle metadata unique to it — skippable, phase
+# merges, output artifact. validate_kit.py Check 13 verifies routing.py stays
+# consistent with domain_profiles.yaml's primary_agents.
 # ---------------------------------------------------------------------------
 workflows:
 
@@ -371,57 +378,31 @@ workflows:
     phases:
 
       task_framing:
-        primary: orchestrator
-        supporting: []
         skippable: false
         merge_with: requirements     # allowed for very small tasks (orchestrator decides)
         output_artifact: task_profile
 
       requirements:
-        primary: architect_agent
-        supporting: [orchestrator]
         skippable: false
         merge_with: solution_design  # allowed when scope is clear and small
         output_artifact: requirements_spec
 
       solution_design:
-        primary: architect_agent
-        supporting: [ui_agent, ux_agent]
         skippable: false
         merge_with: null
         output_artifact: solution_design
 
       implementation:
-        primary:
-          software: code_agent
-          content: execution_agent
-          research: execution_agent
-          data_analytics: code_agent
-          product_design: execution_agent
-          marketing: execution_agent
-          ops_process: execution_agent
-        supporting: [ui_agent, ux_agent]
         skippable: false
         merge_with: null
         output_artifact: work_product + build_log
 
       review_refinement:
-        primary: reviewer_agent
-        supporting:
-          software: [code_agent]
-          content: [execution_agent]
-          research: [execution_agent]
-          data_analytics: [code_agent]
-          product_design: [ui_agent, ux_agent]
-          marketing: [execution_agent, ux_agent]
-          ops_process: [execution_agent]
         skippable: false
         merge_with: null
         output_artifact: refinement_report
 
       handoff:
-        primary: orchestrator
-        supporting: [execution_agent]
         skippable: false
         merge_with: null
         output_artifact: handoff_package

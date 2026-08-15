@@ -16,6 +16,10 @@ Two views are exposed because the tools present routing differently:
     table (used where the orchestrator is mentioned separately, e.g. CLAUDE.md).
   * active_agents(phase, domain) -> orchestrator-first, deduplicated (used for
     the "Active agents" line of a generated prompt).
+
+PHASE_AGENTS is the single source of truth. The human-readable mirror in
+config/agents.yaml (workflows.generic_project_lifecycle) must match it exactly;
+validate_kit.py Check 13 fails the build if the two ever drift apart again.
 """
 
 from __future__ import annotations
@@ -36,10 +40,16 @@ PHASE_AGENTS: dict[str, dict[str, list[str]]] = {
         "data_analytics": ["code_agent"],
     },
     "review_refinement": {
-        "_all":          ["reviewer_agent"],
-        "software":      ["reviewer_agent", "code_agent"],
+        # Each domain's implementer (or its design specialists) supports the
+        # reviewer, mirroring how software review pairs reviewer_agent + code_agent.
+        "_all":           ["reviewer_agent"],
+        "software":       ["reviewer_agent", "code_agent"],
+        "content":        ["reviewer_agent", "execution_agent"],
+        "research":       ["reviewer_agent", "execution_agent"],
+        "data_analytics": ["reviewer_agent", "code_agent"],
         "product_design": ["reviewer_agent", "ui_agent", "ux_agent"],
-        "marketing":     ["reviewer_agent", "ux_agent"],
+        "marketing":      ["reviewer_agent", "execution_agent", "ux_agent"],
+        "ops_process":    ["reviewer_agent", "execution_agent"],
     },
     "handoff":          {"_all": ["orchestrator", "execution_agent"]},
 }
@@ -87,6 +97,12 @@ def active_agents(phase: str, domain: str) -> list[str]:
     return agents
 
 
+def agent_role_list(agents: list[str]) -> str:
+    """Render agents as ``name (role)`` — the shared formatting used by CLAUDE.md,
+    Cursor rules, and Copilot instructions (previously duplicated in each builder)."""
+    return ", ".join(f"{a} ({AGENT_ROLES.get(a, 'specialist')})" for a in agents)
+
+
 def domain_agents(domain: str) -> list[str]:
     """Every agent this domain uses across all phases (union), orchestrator first.
 
@@ -101,3 +117,26 @@ def domain_agents(domain: str) -> list[str]:
             if a not in seen:
                 seen.append(a)
     return seen
+
+
+def parse_current_phase(state_text: str) -> str:
+    """Return the canonical lifecycle phase named under the ``## Current Phase``
+    heading of a project_state.md, or ``task_framing`` if it is absent/unrecognized.
+
+    Single home for project_state phase parsing (previously duplicated as
+    generate_prompt.infer_phase and generate_claude_md._parse_phase, which used
+    different matching and could disagree). Reads the first non-empty, non-heading
+    line after the heading and matches it against the canonical phase keys.
+    """
+    in_section = False
+    for line in state_text.splitlines():
+        stripped = line.strip()
+        if stripped == "## Current Phase":
+            in_section = True
+            continue
+        if in_section and stripped and not stripped.startswith("#"):
+            for phase in PHASE_AGENTS:  # canonical keys, in lifecycle order
+                if phase in stripped.lower():
+                    return phase
+            break
+    return "task_framing"

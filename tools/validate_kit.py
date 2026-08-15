@@ -5,7 +5,7 @@ validate_kit.py — Multi-Agent Assistant Kit integrity checker.
 Run after any change to config files, agents, skills, or domains:
     python tools/validate_kit.py
 
-Runs 12 checks:
+Runs 13 checks:
   1.    YAML parse — all 3 config files
   2.    Agent .md files exist and have content
   3.    Skill .md files exist and have content
@@ -18,6 +18,7 @@ Runs 12 checks:
   10.   Skill markdown structure (input, output, token cost sections)
   11.   Agent markdown structure (role, goals, context sections)
   12.   system_prompt.md freshness (source hash matches current agents + skills)
+  13.   Primary-agent routing consistency (domain_profiles.yaml primary_agents covered by tools/routing.py)
 
 Exit code 0 = all checks pass. Exit code 1 = one or more failures.
 Requires pyyaml (pip install pyyaml).
@@ -38,9 +39,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 try:
     from tools._core import source_hash
     from tools.domain_utils import score_domain
+    from tools.routing import PHASE_AGENTS, phase_agents
 except ImportError:
     from _core import source_hash
     from domain_utils import score_domain
+    from routing import PHASE_AGENTS, phase_agents
 
 
 # ---------------------------------------------------------------------------
@@ -390,7 +393,10 @@ def check_file_inventory() -> None:
         ok("Repository map found but no file entries extracted (skip)")
         return
 
-    missing = [f for f in files_in_readme if not list(ROOT.rglob(f))]
+    # Index every path basename once, then test membership — O(repo) instead of
+    # O(repo × len(files_in_readme)) full-tree walks (rglob(f) per file).
+    all_names = {p.name for p in ROOT.rglob("*")}
+    missing = [f for f in files_in_readme if f not in all_names]
     if missing:
         fail(f"Files in README map not found on disk: {missing}")
     else:
@@ -431,6 +437,44 @@ def check_system_prompt_freshness() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Check 13 — Primary-agent routing consistency (domain_profiles ⇄ routing.py)
+# ---------------------------------------------------------------------------
+
+def check_primary_agent_routing(domain_cfg: dict) -> None:
+    """Every domain's declared primary agent for a phase must actually be
+    activated by tools/routing.py for that (phase, domain).
+
+    domain_profiles.yaml is the routing source the orchestrator follows (per
+    docs/architecture.md); tools/routing.py is the source every generator
+    consumes. This check fails the build if the two ever drift apart.
+    """
+    print("\n--- Primary-Agent Routing Consistency (domain_profiles <-> routing.py) ---")
+    domains = domain_cfg.get("domains") or {}
+    if not domains:
+        fail("domain_profiles.yaml has no domains")
+        return
+
+    mismatches: list[str] = []
+    checked = 0
+    for d, cfg in domains.items():
+        for phase, primary in (cfg.get("primary_agents") or {}).items():
+            checked += 1
+            if phase not in PHASE_AGENTS:
+                mismatches.append(f"{d}/{phase}: phase absent from routing.py PHASE_AGENTS")
+                continue
+            active = set(phase_agents(phase, d))
+            if primary not in active:
+                mismatches.append(
+                    f"{d}/{phase}: primary '{primary}' not activated by routing.py {sorted(active)}"
+                )
+
+    if mismatches:
+        fail("domain_profiles primary_agents diverge from tools/routing.py -> " + "; ".join(mismatches))
+    else:
+        ok(f"Primary-agent routing: all {checked} domain/phase primaries are covered by routing.py")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -456,8 +500,9 @@ def main() -> int:
     check_skill_structure(agents_cfg)
     check_agent_structure(agents_cfg)
     check_system_prompt_freshness()
+    check_primary_agent_routing(domain_cfg)
 
-    total_checks = 12
+    total_checks = 13
     failed = len(FAILURES)
     passed = total_checks - failed
 

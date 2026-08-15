@@ -136,13 +136,13 @@ for n, expected_domain, task in domain_tests:
     check(n, f"Domain detection -> {expected_domain}", found, f"task='{task[:50]}...' output snippet: {out[:200]}")
 
 # -------------------------------------------------------------
-# D. validate_kit.py — all 12 checks pass
+# D. validate_kit.py — all 13 checks pass
 # -------------------------------------------------------------
-section("D. validate_kit.py — all 12 checks pass normally")
+section("D. validate_kit.py — all 13 checks pass normally")
 
 rc, out, err = run([PY, "tools/validate_kit.py"])
 check(24, "validate_kit.py exits 0", rc == 0, err[:200])
-check(25, "ALL 12 checks PASSED in output", "ALL 12 checks PASSED" in out, out[-300:])
+check(25, "ALL 13 checks PASSED in output", "ALL 13 checks PASSED" in out, out[-300:])
 
 # -------------------------------------------------------------
 # E. validate_kit.py — failure detection (temporarily corrupt files)
@@ -162,33 +162,33 @@ finally:
         bak.rename(orch_path)
 
 skill_path = ROOT / "skills" / "analyze_repo.md"
-skill_backup = skill_path.read_text(encoding="utf-8")
+skill_backup = skill_path.read_bytes()  # bytes → restore is EOL-exact (no CRLF churn)
 try:
     skill_path.write_text("short", encoding="utf-8")
     rc, out, err = run([PY, "tools/validate_kit.py"])
     check(27, "Stub skill file (< 50 chars) -> FAIL in output", "FAIL" in out, out[-300:])
 finally:
-    skill_path.write_text(skill_backup, encoding="utf-8")
+    skill_path.write_bytes(skill_backup)
 
 try:
     skill_path.write_text("# Skill: test\n\nNo input or output section here.\n\nToken budget: low\n", encoding="utf-8")
     rc, out, err = run([PY, "tools/validate_kit.py"])
     check(28, "Skill missing input/output headings -> FAIL in output", "FAIL" in out, out[-300:])
 finally:
-    skill_path.write_text(skill_backup, encoding="utf-8")
+    skill_path.write_bytes(skill_backup)
 
 agent_path = ROOT / "agents" / "orchestrator.md"
-agent_backup = agent_path.read_text(encoding="utf-8")
+agent_backup = agent_path.read_bytes()  # bytes → restore is EOL-exact (no CRLF churn)
 try:
     agent_path.write_text("# Orchestrator\n\nSome content without required sections.\n" * 5, encoding="utf-8")
     rc, out, err = run([PY, "tools/validate_kit.py"])
     check(29, "Agent missing ## Role/Goals/Context -> FAIL in output", "FAIL" in out, out[-300:])
 finally:
-    agent_path.write_text(agent_backup, encoding="utf-8")
+    agent_path.write_bytes(agent_backup)
 
 # Confirm restore worked
 rc, out, err = run([PY, "tools/validate_kit.py"])
-check(30, "All files restored -> validator passes again", "ALL 12 checks PASSED" in out, out[-200:])
+check(30, "All files restored -> validator passes again", "ALL 13 checks PASSED" in out, out[-200:])
 
 # -------------------------------------------------------------
 # F. Compressor / PolicyLoader — direct import tests
@@ -272,9 +272,21 @@ check(44, "file_chunker.py output contains README content",
 # -------------------------------------------------------------
 section("H. init_project.py — smoke tests")
 
-rc, out, err = run([PY, "tools/init_project.py", "--path", str(ROOT), "--update"])
-check(45, "init_project.py --update exits 0", rc == 0, err[:300])
-check(46, "system_prompt.md still exists after --update", (ROOT / "system_prompt.md").exists(), "")
+# --update regenerates system_prompt.md + project.yaml; back them up byte-exact
+# so the suite leaves the working tree clean.
+_sp_path = ROOT / "system_prompt.md"
+_proj_path = ROOT / "config" / "project.yaml"
+_sp_backup = _sp_path.read_bytes() if _sp_path.exists() else None
+_proj_backup = _proj_path.read_bytes() if _proj_path.exists() else None
+try:
+    rc, out, err = run([PY, "tools/init_project.py", "--path", str(ROOT), "--update"])
+    check(45, "init_project.py --update exits 0", rc == 0, err[:300])
+    check(46, "system_prompt.md still exists after --update", (ROOT / "system_prompt.md").exists(), "")
+finally:
+    if _sp_backup is not None:
+        _sp_path.write_bytes(_sp_backup)
+    if _proj_backup is not None:
+        _proj_path.write_bytes(_proj_backup)
 
 # -------------------------------------------------------------
 # I. generate_prompt.py — missing project.yaml
@@ -381,6 +393,31 @@ cl_text = cl.read_text(encoding="utf-8") if cl.exists() else ""
 check(65, "copilot prompt has ${input:task} and claude subagent has frontmatter",
       "${input:task}" in cop_text and "name: brain" in cl_text and "tools:" in cl_text,
       cop_text[:120])
+
+# -------------------------------------------------------------
+# N. Primary-agent routing consistency (Check 13) — domain_profiles <-> routing.py
+# -------------------------------------------------------------
+section("N. Primary-agent routing consistency (domain_profiles <-> routing.py)")
+
+rc, out, err = run([PY, "tools/validate_kit.py"])
+check(66, "validate_kit runs the Primary-Agent Routing Consistency check",
+      "Primary-Agent Routing Consistency" in out, out[-300:])
+
+# Negative: point a domain's primary agent at one routing.py never activates,
+# and confirm the guard catches it.
+domain_yaml = ROOT / "config" / "domain_profiles.yaml"
+domain_backup = domain_yaml.read_bytes()  # bytes → restore is EOL-exact (no CRLF churn)
+try:
+    # software/implementation in routing.py is [code_agent]; ui_agent is never
+    # activated there, so declaring it the primary must make Check 13 fail.
+    diverged = domain_backup.decode("utf-8").replace("implementation: code_agent", "implementation: ui_agent", 1)
+    changed = diverged.encode("utf-8") != domain_backup
+    domain_yaml.write_text(diverged, encoding="utf-8")
+    rc, out, err = run([PY, "tools/validate_kit.py"])
+    check(67, "Divergent domain_profiles primary -> Check 13 FAILs",
+          changed and rc != 0 and "diverge from tools/routing.py" in out, out[-300:])
+finally:
+    domain_yaml.write_bytes(domain_backup)
 
 # -------------------------------------------------------------
 # Summary
