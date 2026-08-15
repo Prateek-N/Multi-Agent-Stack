@@ -60,7 +60,7 @@ In Claude.ai, create a new Project. Name it something like "Dev Assistant" or af
 
 Open Project Settings → Instructions. Paste the entire contents of `system_prompt.md` as the Project Instructions.
 
-That's it — `system_prompt.md` contains all 8 agents and 12 skills pre-assembled (~28K tokens). No individual file uploads needed.
+That's it — `system_prompt.md` contains all 10 agents and 12 skills pre-assembled. No individual file uploads needed.
 
 ```
 # Copy the full contents of system_prompt.md and paste here:
@@ -88,7 +88,7 @@ python agents-maker/tools/init_project.py --update
 # Then copy the updated system_prompt.md into Project Instructions
 ```
 
-Run `python tools/validate_kit.py` first to confirm all 8 integrity checks pass before regenerating.
+Run `python tools/validate_kit.py` first to confirm all 13 integrity checks pass before regenerating.
 
 ---
 
@@ -121,7 +121,7 @@ def load_agent_kit() -> str:
 system_prompt = load_agent_kit()
 
 response = client.messages.create(
-    model="claude-sonnet-4-6",
+    model="claude-opus-4-8",
     max_tokens=4096,
     system=system_prompt,
     messages=[
@@ -163,7 +163,7 @@ compressed_context, report = compressor.compress(block)
 
 # Send to Claude
 response = client.messages.create(
-    model="claude-sonnet-4-6",
+    model="claude-opus-4-8",
     max_tokens=4096,
     system=system_prompt,
     messages=[{"role": "user", "content": compressed_context}],
@@ -189,8 +189,8 @@ Omit introductory sentences. Start all responses with the first finding or actio
 | Claude model | Max input tokens | Recommended max_input_tokens policy |
 |---|---|---|
 | claude-haiku-4-5 | 200K | 60,000 |
-| claude-sonnet-4-6 | 200K | 100,000 |
-| claude-opus-4-7 | 200K | 150,000 |
+| claude-sonnet-5 | 1M | 100,000 |
+| claude-opus-4-8 | 1M | 150,000 |
 
 Set `max_input_tokens` in `token_policies.yaml` well below the model limit to leave room for the system prompt and output.
 
@@ -198,13 +198,14 @@ Set `max_input_tokens` in `token_policies.yaml` well below the model limit to le
 
 ## Using extended thinking (Claude Sonnet / Opus)
 
-For complex architecture tasks, enable extended thinking:
+For complex architecture tasks, enable adaptive thinking — Claude decides how much to think, and you tune depth with `effort`. (The older `thinking={"type": "enabled", "budget_tokens": N}` form is removed on current models and returns a 400.)
 
 ```python
 response = client.messages.create(
-    model="claude-sonnet-4-6",
+    model="claude-opus-4-8",
     max_tokens=16000,
-    thinking={"type": "enabled", "budget_tokens": 10000},
+    thinking={"type": "adaptive"},
+    output_config={"effort": "high"},
     system=system_prompt,
     messages=[...],
 )

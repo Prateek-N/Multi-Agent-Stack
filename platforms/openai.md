@@ -47,7 +47,7 @@ print(response.choices[0].message.content)
 # → Response ends with [Companion] block: three ranked next steps
 ```
 
-The `system_prompt.md` contains all 8 agents + 12 skills pre-assembled. Pass it once as the `system` role. Use `generate_prompt.py` output as the `user` role each turn. For multi-turn sessions, append prior `assistant` + `user` messages to the `messages` list normally.
+The `system_prompt.md` contains all 10 agents + 12 skills pre-assembled. Pass it once as the `system` role. Use `generate_prompt.py` output as the `user` role each turn. For multi-turn sessions, append prior `assistant` + `user` messages to the `messages` list normally.
 
 See [platforms/claude.md](claude.md) for the full Companion Mode walkthrough and lifecycle example.
 

@@ -6,6 +6,58 @@ Format: [Semantic Versioning](https://semver.org). Types: `Added`, `Changed`, `F
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Phase→agent routing single-sourced.** The routing table was hand-copied in
+  `config/agents.yaml`'s workflow block and had drifted from `tools/routing.py` — the
+  source every generator consumes. Removed the duplicate: routing now lives only in
+  `routing.py` (with per-domain primaries in `config/domain_profiles.yaml`); the
+  `agents.yaml` workflow block keeps only lifecycle metadata (skippable, phase merges,
+  output artifact). Also corrected `routing.py`'s asymmetric `review_refinement` mapping —
+  software review paired with its implementer (`code_agent`) but content/research/data/ops
+  reviews dropped theirs.
+
+### Added
+- **`validate_kit.py` Check 13 — Primary-Agent Routing Consistency.** Fails if any domain's
+  declared primary agent in `config/domain_profiles.yaml` isn't activated by `tools/routing.py`
+  for that phase, tying the orchestrator's documented routing source to the code source.
+  Validator now runs 13 checks.
+
+### Changed
+- **Code-quality pass (no behavior change).** De-duplicated and de-coupled internals
+  while keeping every generated artifact byte-identical (67/67 tests, 13/13 checks):
+  - single YAML loader (`_core.load_yaml`) — dropped the private copy in `domain_utils`;
+  - single built-in domain list (`domain_utils.BUILTIN_DOMAINS`) — removed the hardcoded
+    duplicates in `generate_prompt` and `init_project`;
+  - single project_state phase parser (`routing.parse_current_phase`) — replaced the two
+    divergent parsers (`generate_prompt.infer_phase`, `generate_claude_md._parse_phase`);
+  - single snippet truncator (`_core.truncate_snippet`) — shared by `file_chunker` and
+    the `compressor`;
+  - `generate_platform_configs` now imports routing from `tools/routing.py` (the source of
+    truth) instead of another generator's private names; `project_summary` uses one
+    directory walker;
+  - single pluggable token estimator (`_core.estimate_tokens`, injectable `counter`) replaces
+    the hardcoded `len//4` in `generate_prompt` and `init_project` (offline default unchanged);
+  - single agent-role renderer (`routing.agent_role_list`) shared by the CLAUDE.md / Cursor /
+    Copilot config builders (generated files byte-identical).
+  - **Perf:** `validate_kit` file-inventory check does one repo traversal instead of one
+    per README entry; hoisted a per-call `import re` in the compressor.
+
+### Docs
+- **Honest token-optimization claims.** Clarified that the `token_optimization/compressor.py`
+  relevance-filter + truncate pipeline is an **opt-in** programmatic layer for API integrations,
+  not an always-on step in the paste flow (which surfaces the policy so the model self-limits).
+  Softened the README's "context is compressed" wording and relabeled the compressor's module
+  docstring accordingly.
+- Refreshed stale references: current Claude model IDs (`claude-opus-4-8` / `claude-sonnet-5`,
+  1M context) and adaptive-thinking (`budget_tokens` → `effort`) in `platforms/claude.md` and
+  the compressor's `ClaudeAdapter`; corrected agent count (8 → 10) and validator check count
+  (8 → 13) in `platforms/*.md`, `docs/architecture.md`, `CONTRIBUTING.md`; test-suite count
+  (60 → 67) in the README badge and PR template.
+
+---
+
 ## [1.0.3] - 2026-07-13
 
 ### Added

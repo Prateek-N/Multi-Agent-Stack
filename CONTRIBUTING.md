@@ -36,7 +36,7 @@ git checkout -b feat/my-new-skill
 
 # 3. Make your changes
 
-# 4. Run the integrity checker — must pass ALL 8 checks before opening a PR
+# 4. Run the integrity checker — must pass ALL 13 checks before opening a PR
 python tools/validate_kit.py
 
 # 5. Commit and push
@@ -55,7 +55,7 @@ Every PR must pass all checks:
 
 ```
 ============================================================
-  Result: ALL 8 checks PASSED
+  Result: ALL 13 checks PASSED
 ============================================================
 ```
 

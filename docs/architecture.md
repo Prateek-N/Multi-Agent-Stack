@@ -282,7 +282,7 @@ Three Python tools implement the Companion Mode workflow:
 |---|---|---|
 | `tools/init_project.py` | Once per project | Scans project, detects domain + stack, writes `config/project.yaml`, assembles `system_prompt.md` from all agents + skills, creates `project_state.md` template |
 | `tools/generate_prompt.py` | Before every session | Detects domain from problem statement, infers lifecycle phase from `project_state.md`, selects agents and skills, outputs a structured prompt block to paste into any AI tool |
-| `tools/validate_kit.py` | After any edit | Runs 8 integrity checks: YAML parse, agent files, skill files, domain coverage, agent references, output styles, domain scoring, file inventory |
+| `tools/validate_kit.py` | After any edit | Runs 13 integrity checks: YAML parse, agent + skill files + structure, domain coverage, agent references, output styles, domain scoring, file inventory, compressor dry-run, system_prompt freshness, primary-agent routing consistency |
 
 **Flow:**
 ```

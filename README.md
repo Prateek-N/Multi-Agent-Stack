@@ -14,7 +14,7 @@
 ![Agents](https://img.shields.io/badge/Agents-10-purple)
 ![Skills](https://img.shields.io/badge/Skills-12-green)
 ![Domains](https://img.shields.io/badge/Domains-8-orange)
-![Tests](https://img.shields.io/badge/Tests-60%2F60-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-67%2F67-brightgreen)
 
 </div>
 
@@ -33,13 +33,13 @@
 | Re-explain the project every session | `project_state.md` resumes automatically |
 | AI gives generic boilerplate patterns | Specialist agent uses your actual stack |
 | Wrong domain, wrong agent, wrong output | Domain auto-detected from task description |
-| Bloated context, slow token-heavy responses | Token budget enforced per phase and domain |
+| Bloated context, slow token-heavy responses | Token budget applied per phase and domain |
 | "What do I do next?" after every response | 3 ranked next steps surfaced automatically |
 | One-size-fits-all output style | 11 output styles matched to phase and task |
 
 - 🎯 **Domain is auto-detected** from your task — software, content, research, marketing, analytics, product design, ops
 - 🧠 **10 named agents** — invoke any by name (`/brain`, `/planpro`, `/code`, …), or let the Orchestrator route automatically
-- 💰 **Token budget is enforced** — context is compressed to fit the right window per phase
+- 💰 **Token budget is applied** — per-phase/domain policy is surfaced to the model, with an opt-in programmatic compressor for API integrations
 - 🗺️ **Next steps always surfaced** — 3 ranked options after every response
 - 🔄 **State persists across sessions** — resume long projects without replaying history
 - 🔌 **Works with any LLM** — pure Markdown + YAML, no provider lock-in, no API keys
@@ -580,14 +580,14 @@ You always know what to do next. No planning overhead between sessions.
 
 ## 🔋 Token Optimization
 
-The kit enforces a token budget per phase and domain, defined in `config/token_policies.yaml`:
+Token budgets are defined per phase and domain in `config/token_policies.yaml` and applied two ways — by instructing the model (paste flow) and by an opt-in programmatic pipeline (API integrations):
 
 - 📏 **Per-phase limits** — implementation phases get more tokens than framing phases
 - 🎯 **Per-domain overrides** — product_design gets UI/UX context; software gets code context
-- 🔢 **Relevance filtering** — files are scored and ranked; only the most relevant are included
-- 🗜️ **History compression** — raw discussion turns dropped after each phase; only approved artifacts kept
+- 🔢 **Relevance filtering** — files scored, ranked, and truncated by [`token_optimization/compressor.py`](token_optimization/compressor.py), an opt-in programmatic layer for API integrations (not the paste flow)
+- 🗜️ **Output-style caps** — each phase maps to an output style that bounds response length
 
-Use `--compress` to attach the active token policy to any generated prompt. Use `--full` only on platforms without persistent system prompts.
+In the paste flow, `--compress` surfaces the active policy (limits + output style) so the model self-limits; the `compressor.py` pipeline does the actual relevance-filtering + truncation when you wire it into your own API code (see [`platforms/claude.md`](platforms/claude.md)). Use `--full` only on platforms without persistent system prompts.
 
 ---
 
@@ -611,11 +611,11 @@ After any edits, run the integrity checker:
 python agents-maker/tools/validate_kit.py
 ```
 
-Runs **12 checks**: YAML parse · agent files + structure · skill files + structure · domain coverage · agent references · output styles · domain scoring · file inventory · compressor dry-run · system_prompt.md freshness.
+Runs **13 checks**: YAML parse · agent files + structure · skill files + structure · domain coverage · agent references · output styles · domain scoring · file inventory · compressor dry-run · system_prompt.md freshness · primary-agent routing consistency.
 
 ```
 ============================================================
-  Result: ALL 12 checks PASSED
+  Result: ALL 13 checks PASSED
 ============================================================
 ```
 
@@ -680,7 +680,7 @@ agents-maker/
 │   ├── generate_platform_configs.py ← wire into Claude Code, Copilot, Cursor, Antigravity
 │   ├── generate_claude_md.py        ← writes CLAUDE.md for Claude Code integration
 │   ├── validate_kit.py              ← 12-check integrity validator
-│   ├── test_kit.py                  ← 60-test edge-case suite (CI + local)
+│   ├── test_kit.py                  ← 67-test edge-case suite (CI + local)
 │   └── domain_utils.py              ← shared domain scoring (used by all 3 tools)
 ├── 🔌 context_loaders/
 │   ├── project_summary.py           ← stack + structure detection

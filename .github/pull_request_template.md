@@ -18,7 +18,7 @@
 ## Pre-Submit Checklist
 
 - [ ] `python agents-maker/tools/validate_kit.py` passes ALL checks
-- [ ] `python agents-maker/tools/test_kit.py` passes 60/60 (or more if new tests added)
+- [ ] `python agents-maker/tools/test_kit.py` passes 67/67 (or more if new tests added)
 - [ ] If adding a skill: has `## Input Expectations`, `## Output Format`, and `## Token Cost Tier` sections
 - [ ] If adding an agent: has `## Role`, `## Goals`, and `## Context` sections
 - [ ] If adding a domain: entry added to `config/domain_profiles.yaml` with detection signals and primary_agents
