@@ -107,7 +107,7 @@ python tools/compare_prompts.py "[domain: ops_process] write a Redis failover ru
 
 ## Cost / token optimization
 
-The full system prompt (all 8 agents + 12 skills) is ~30k input tokens per call —
+The full system prompt (all 10 agents + 12 skills) is ~30k input tokens per call —
 the cost/latency issue the grading surfaced. Two levers now reduce it:
 
 1. **Task-scoped (lazy-loaded) system prompt.** `generate_prompt.py --full` and
@@ -134,5 +134,5 @@ under a small (e.g. 10k tokens/min) account tier would require either a higher
 tier, caching (cost only, not first-call rate limit), or trimming the verbose
 agent/skill specs — flagged as future work. A live re-run of the scoped+cached
 path wasn't completed here because the test API key was rotated mid-session; the
-scoping change is covered by the unit suite (60/60) and only removes
+scoping change is covered by the unit suite (67/67) and only removes
 non-domain content, so the graded ops result above is unaffected.

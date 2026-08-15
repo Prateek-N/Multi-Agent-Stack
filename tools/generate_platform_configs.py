@@ -36,12 +36,12 @@ sys.path.insert(0, str(KIT_DIR))
 
 try:
     from tools._core import atomic_write, load_yaml, py_invocation
-    from tools.routing import PHASE_LABELS, agent_role_list, phase_agents
     from tools.generate_claude_md import _parse_phase, build_claude_md
+    from tools.routing import PHASE_LABELS, agent_role_list, phase_agents
 except ImportError:
     from _core import atomic_write, load_yaml, py_invocation
-    from routing import PHASE_LABELS, agent_role_list, phase_agents
     from generate_claude_md import _parse_phase, build_claude_md
+    from routing import PHASE_LABELS, agent_role_list, phase_agents
 
 PLATFORMS = ["claude", "agents", "copilot", "cursor", "antigravity"]
 

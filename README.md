@@ -78,7 +78,7 @@ agents-maker init
 The quickstart script handles everything:
 1. ✅ Checks Python 3.9+
 2. 📦 Installs `pyyaml` (the only dependency)
-3. 🔍 Validates all 12 kit integrity checks
+3. 🔍 Validates all 13 kit integrity checks
 4. 🚀 Runs `init_project.py` to scan your project and generate `system_prompt.md`
 5. 📋 Prints all commands you need, ready to copy-paste
 
@@ -646,6 +646,8 @@ agents-maker/
 │   └── domains.md                   ← domain plug-in schema + built-in domain cards
 ├── 🤖 agents/
 │   ├── orchestrator.md              ← phase driver, domain detection, Companion Mode
+│   ├── brain.md                     ← brainstorm 3+ approaches, recommend one (/brain)
+│   ├── planpro.md                   ← dependency-ordered implementation plan (/planpro)
 │   ├── architect_agent.md           ← requirements + solution design (all domains)
 │   ├── code_agent.md                ← software/data implementation
 │   ├── execution_agent.md           ← non-code drafting (content, research, marketing, ops)
@@ -679,7 +681,7 @@ agents-maker/
 │   ├── generate_prompt.py           ← daily driver (run before every session)
 │   ├── generate_platform_configs.py ← wire into Claude Code, Copilot, Cursor, Antigravity
 │   ├── generate_claude_md.py        ← writes CLAUDE.md for Claude Code integration
-│   ├── validate_kit.py              ← 12-check integrity validator
+│   ├── validate_kit.py              ← 13-check integrity validator
 │   ├── test_kit.py                  ← 67-test edge-case suite (CI + local)
 │   └── domain_utils.py              ← shared domain scoring (used by all 3 tools)
 ├── 🔌 context_loaders/

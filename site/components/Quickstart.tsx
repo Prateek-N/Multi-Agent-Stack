@@ -82,7 +82,7 @@ export default function Quickstart() {
               {[
                 'Checks Python 3.9+',
                 'Installs pyyaml (the only dependency)',
-                'Validates all 12 kit integrity checks',
+                'Validates all 13 kit integrity checks',
                 'Scans your project and generates system_prompt.md',
                 'Prints all commands you need, ready to copy-paste',
               ].map((step, i) => (

@@ -35,10 +35,12 @@ except ImportError as e:
 
 try:
     from tools._core import atomic_write, atomic_write_yaml, estimate_tokens, load_yaml, source_hash
-    from tools.domain_utils import BUILTIN_DOMAINS, detect_domain as _detect_domain
+    from tools.domain_utils import BUILTIN_DOMAINS
+    from tools.domain_utils import detect_domain as _detect_domain
 except ImportError:
     from _core import atomic_write, atomic_write_yaml, estimate_tokens, load_yaml, source_hash
-    from domain_utils import BUILTIN_DOMAINS, detect_domain as _detect_domain
+    from domain_utils import BUILTIN_DOMAINS
+    from domain_utils import detect_domain as _detect_domain
 
 
 def detect_domain(summary_text: str) -> tuple[str, str]:

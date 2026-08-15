@@ -44,11 +44,13 @@ MAX_PROBLEM_LENGTH = 5000
 
 try:
     from tools._core import atomic_write_yaml, estimate_tokens, load_yaml
-    from tools.domain_utils import BUILTIN_DOMAINS, detect_domain as _du_detect
+    from tools.domain_utils import BUILTIN_DOMAINS
+    from tools.domain_utils import detect_domain as _du_detect
     from tools.routing import active_agents, domain_agents, parse_current_phase
 except ImportError:
     from _core import atomic_write_yaml, estimate_tokens, load_yaml
-    from domain_utils import BUILTIN_DOMAINS, detect_domain as _du_detect
+    from domain_utils import BUILTIN_DOMAINS
+    from domain_utils import detect_domain as _du_detect
     from routing import active_agents, domain_agents, parse_current_phase
 
 

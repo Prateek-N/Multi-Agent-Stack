@@ -192,8 +192,8 @@ For a full feature build (design → implement → test → review), simply stat
 
 A domain-agnostic workflow that applies to any complex task: software, content, research, analytics, product design, marketing, and operational processes. The same six-phase structure is used for all domains; only the agents selected and output formats vary.
 
-For domain-specific details, see [`docs/domains.md`](docs/domains.md).
-For token policies per phase, see [`config/token_policies.yaml`](config/token_policies.yaml) under `workflows.generic_project_lifecycle`.
+For domain-specific details, see [`docs/domains.md`](domains.md).
+For token policies per phase, see [`config/token_policies.yaml`](../config/token_policies.yaml) under `workflows.generic_project_lifecycle`.
 
 ---
 

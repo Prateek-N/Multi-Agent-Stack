@@ -28,8 +28,8 @@ Thank you for improving the kit. This guide covers the contribution workflow, st
 
 ```bash
 # 1. Fork and clone
-git clone https://github.com/<your-username>/agents-maker
-cd agents-maker
+git clone https://github.com/<your-username>/Multi-Agent-Stack
+cd Multi-Agent-Stack
 
 # 2. Create a branch
 git checkout -b feat/my-new-skill
