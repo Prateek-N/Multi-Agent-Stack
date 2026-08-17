@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 const stats = [
   { number: 10, label: 'Named Agents' },
   { number: 12, label: 'Reusable Skills' },
-  { number: 8, label: 'Auto-Detected Domains' },
-  { number: 60, label: 'Tests Passing' },
+  { number: 8, label: 'Built-In Domains' },
+  { number: 67, label: 'Tests Passing' },
 ];
 
 function prefersReducedMotion() {
